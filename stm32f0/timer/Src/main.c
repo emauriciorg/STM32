@@ -118,7 +118,7 @@ int main(void)
 		//TODO : add another led
 	}
 	/*timer6 in polling mode*/
-    	if ( __HAL_TIM_GET_FLAG(&htim6,TIM_FLAG_UPDATE) ){
+	if ( __HAL_TIM_GET_FLAG(&htim6,TIM_FLAG_UPDATE) ){
 		//LED_GREEN_TOGGLE();
 		__HAL_TIM_CLEAR_FLAG(&htim6,TIM_FLAG_UPDATE);
 		millis_counter_timer6++;

@@ -3,15 +3,12 @@
 
 
 
-
-
 extern TIM_HandleTypeDef htim6;
 
 static uint32_t seconds_counter = 5;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-
 	if (htim->Instance == TIM6) {
 		if (! (seconds_counter-- ) ) {
 			LED_GREEN_TOGGLE();
