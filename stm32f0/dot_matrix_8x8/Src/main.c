@@ -97,7 +97,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	dbg_setup();
 	printf(" Program start! %s %s\r\n",__DATE__,__TIME__ );
-
+	max7219_test();
   /* USER CODE END 2 */
 
   /* Infinite loop */
