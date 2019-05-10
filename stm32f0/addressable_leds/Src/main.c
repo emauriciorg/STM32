@@ -43,12 +43,33 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim3;
+DMA_HandleTypeDef hdma_tim3_ch1_trig;
 
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
-volatile uint32_t rgb     = 0x0f0000;
+volatile uint32_t rgb     = 0xaaaaaa;
+volatile uint32_t pwm_buffer[200] = {   14, 8,14, 8,14, 8,14, 8,
+					14, 8,14, 8,14, 8,14, 8,
+					14, 8,14, 8,14, 8,14, 8,
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+					 14, 14, 0, 0, 0, 0, 0, 0,
+					 14, 14, 0, 0, 0, 0, 0, 0,
+					 14, 14, 0, 0, 0, 0, 0, 0,
+
+					 14, 8, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+					 14, 8, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+				    };
 volatile uint8_t bit_id   = 0;
 volatile uint16_t next_led = 0;
 volatile uint32_t duty_cycle = 0;
@@ -58,6 +79,7 @@ volatile uint8_t led_pattern = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
@@ -70,49 +92,36 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM3) {
 
-		if ((rgb >> bit_id) &0x000001){
-			duty_cycle = 86;
+		if (((rgb >> bit_id) & 0x1)==0X01) {
+			duty_cycle = 19;//86;
 		}else{
-			duty_cycle = 33;
+			duty_cycle = 10;//33;
 		}
 
-		if (bit_id > 23)
-			bit_id = 0;
-		else
-			bit_id++;
 
-		if (next_led > 23) {
+		if (bit_id > 7) {
 			duty_cycle = 0;
+		//	GPIOC->ODR |= GPIO_PIN_8;
+		}else {
+			bit_id++;
 		}
 
-		if (next_led > 200) {
-			bit_id   = 0;
-			next_led = 0;
 
-/*
-			if (led_pattern == 0)
-				rgb = 0x0f0000;
-			if (led_pattern == 1)
-				rgb = 0x000f00;
-			if (led_pattern == 2)
-				rgb = 0x00000f;
-			if (led_pattern > 2){
-				led_pattern = 0;
-				rgb= 0x030300;
-			}else{
-				led_pattern++;
-			}
-			*/
-			//GPIOC->ODR ^= GPIO_PIN_9;
-		}else{
-			next_led++;
-		}
-		//GPIOC->ODR ^= GPIO_PIN_8;
-		htim->Instance->CCR1 = duty_cycle;
+		//htim->Instance->CCR1 = duty_cycle;
 		__HAL_TIM_CLEAR_FLAG(htim,TIM_FLAG_UPDATE);
 	}
 }
 
+#if 0
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim){
+
+	// if ( pwm_buffer[0] == 8)
+		// pwm_buffer[0] = 14;
+	// else
+		// pwm_buffer[0] = 8;
+
+}
+#endif
 /* USER CODE END 0 */
 
 /**
@@ -143,16 +152,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 	GPIOA->ODR &=~GPIO_PIN_6;
+	GPIOC->ODR &= ~GPIO_PIN_8;
 	HAL_Delay(1000);
-  if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1) != HAL_OK)
-  {
-	Error_Handler();
-  }
-	HAL_TIM_Base_Start_IT(&htim3);
+	volatile uint32_t blink_counter = 0;
+  HAL_TIM_Base_Start(&htim3);
+//  HAL_DMA_RegisterCallback ( &htim3.dma[TIM_DMA_ID_CC1],HAL_DMA_XFER_CPLT_CB_ID, half_transfer_callback_dma);
+  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer[0]), 140);
+
 
   /* USER CODE END 2 */
 
@@ -161,7 +172,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	if (HAL_GetTick() > blink_counter) {
+		blink_counter = HAL_GetTick()+ 500;
+		GPIOC->ODR ^= GPIO_PIN_8;
+		//GPIOC->ODR ^= GPIO_PIN_9	;
+	}
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -183,7 +198,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL12;
   RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -215,6 +230,7 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -224,9 +240,18 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 1;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 120;
+  htim3.Init.Period = 18;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -283,6 +308,21 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel4_5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
 
 }
 
