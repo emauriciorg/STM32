@@ -50,25 +50,27 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 
 volatile uint32_t rgb     = 0xaaaaaa;
-volatile uint32_t pwm_buffer[200] = {   14, 8,14, 8,14, 8,14, 8,
-					14, 8,14, 8,14, 8,14, 8,
-					14, 8,14, 8,14, 8,14, 8,
+volatile uint8_t pwm_buffer[200] = {     9, 9, 9, 9, 9, 9, 9, 9,
+					17, 9,17, 9,17, 9,17, 9,
+					17, 9,17, 9,17, 9,17, 9,
 
 					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
 
-					 14, 14, 0, 0, 0, 0, 0, 0,
-					 14, 14, 0, 0, 0, 0, 0, 0,
-					 14, 14, 0, 0, 0, 0, 0, 0,
-
-					 14, 8, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
 
-					 14, 8, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
 				    };
 volatile uint8_t bit_id   = 0;
 volatile uint16_t next_led = 0;
@@ -162,7 +164,7 @@ int main(void)
 	volatile uint32_t blink_counter = 0;
   HAL_TIM_Base_Start(&htim3);
 //  HAL_DMA_RegisterCallback ( &htim3.dma[TIM_DMA_ID_CC1],HAL_DMA_XFER_CPLT_CB_ID, half_transfer_callback_dma);
-  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer[0]), 140);
+  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer[0]), 120);
 
 
   /* USER CODE END 2 */
@@ -172,12 +174,13 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
 	if (HAL_GetTick() > blink_counter) {
 		blink_counter = HAL_GetTick()+ 500;
 		GPIOC->ODR ^= GPIO_PIN_8;
 		//GPIOC->ODR ^= GPIO_PIN_9	;
-	}
-    /* USER CODE BEGIN 3 */
+    }
   }
   /* USER CODE END 3 */
 }
@@ -240,7 +243,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 1;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 18;
+  htim3.Init.Period = 30;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
