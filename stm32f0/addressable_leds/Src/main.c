@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,9 +50,56 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 
 volatile uint32_t rgb     = 0xaaaaaa;
-volatile uint8_t pwm_buffer[200] = {     9, 9, 9, 9, 9, 9, 9, 9,
-					 9, 9,9, 9,9, 9,17, 9,
-					 9, 9, 9, 9, 9, 9, 9, 9,
+
+uint8_t red_color[] ={
+			9, 9, 9, 9, 9, 9,  9, 9,
+			9, 9, 9, 9, 9, 9, 17, 9,
+			9, 9, 9, 9, 9, 9,  9, 9
+};
+uint8_t blue_color[] ={
+			9, 9, 9, 9, 9, 9, 17, 9,
+			9, 9, 9, 9, 9, 9,  9, 9,
+			9, 9, 9, 9, 9, 9,  9, 9
+};
+#define DMA_LED_LEN 288
+volatile uint8_t pwm_buffer[DMA_LED_LEN +2] = {
+					9, 9, 9, 9,    9, 9, 17, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+	 				9, 9, 9, 9,    9, 9, 9, 9,
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 17, 9,
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 17,
+
+//					9, 9, 9, 9,    9, 9, 9, 9,
+	 				9, 9, 9, 9,    9, 9, 9, 9,
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+
+
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
 
 					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
@@ -65,7 +112,6 @@ volatile uint8_t pwm_buffer[200] = {     9, 9, 9, 9, 9, 9, 9, 9,
 					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
-
 
 					 0, 0, 0, 0, 0, 0, 0, 0,
 					 0, 0, 0, 0, 0, 0, 0, 0,
@@ -114,16 +160,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 }
 
-#if 0
-void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim){
 
-	// if ( pwm_buffer[0] == 8)
+volatile uint8_t transfer_finished_ifg = 0;
+//#if 1
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim){
+#if 1
+		if (htim->Instance == TIM3) {
+
+		}
+		// if ( pwm_buffer[0] == 8)
 		// pwm_buffer[0] = 14;
 	// else
 		// pwm_buffer[0] = 8;
-
-}
 #endif
+}
 /* USER CODE END 0 */
 
 /**
@@ -159,14 +209,14 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 	GPIOA->ODR &=~GPIO_PIN_6;
-	GPIOC->ODR &= ~GPIO_PIN_8;
+	GPIOC->ODR |= GPIO_PIN_8;
 	HAL_Delay(1000);
 	volatile uint32_t blink_counter = 0;
   HAL_TIM_Base_Start(&htim3);
 //  HAL_DMA_RegisterCallback ( &htim3.dma[TIM_DMA_ID_CC1],HAL_DMA_XFER_CPLT_CB_ID, half_transfer_callback_dma);
-  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer[0]), 120);
+  HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer[0]), DMA_LED_LEN);
 
-
+volatile uint8_t color_swap = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -179,7 +229,31 @@ int main(void)
 	if (HAL_GetTick() > blink_counter) {
 		blink_counter = HAL_GetTick()+ 500;
 		GPIOC->ODR ^= GPIO_PIN_8;
-		//GPIOC->ODR ^= GPIO_PIN_9	;
+
+		if (pwm_buffer[46] == 9)
+			pwm_buffer[46] = 17;
+		else
+			pwm_buffer[46] = 9;
+
+// 		if (transfer_finished_ifg){
+// //			HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_1);
+//
+// 			transfer_finished_ifg = 0;
+// 			//GPIOA->ODR &= ~GPIO_PIN_6;
+// 			//HAL_Delay(500);
+// 			if (color_swap){
+// 				color_swap = 0;
+// 				//memcpy(pwm_buffer, blue_color,sizeof(blue_color));
+// 			//	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer1[0]), DMA_LED_LEN);
+//
+// 			}else{
+// 			//	memcpy(pwm_buffer, red_color,sizeof(blue_color));
+//
+// 			//	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer[0]), DMA_LED_LEN);
+// 				color_swap = 1;
+// 			}
+//
+// 		}
     }
   }
   /* USER CODE END 3 */
