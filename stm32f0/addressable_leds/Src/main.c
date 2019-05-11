@@ -118,6 +118,64 @@ volatile uint8_t pwm_buffer[DMA_LED_LEN +2] = {
 					 0, 0, 0, 0, 0, 0, 0, 0,
 
 				    };
+
+volatile uint8_t pwm_buffer2[DMA_LED_LEN +2] = {
+					9, 9, 9, 9,    17, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+	 				9, 9, 9, 9,    9, 9, 9, 9,
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    17, 9, 9, 9,
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 17, 9, 9,
+
+//					9, 9, 9, 9,    9, 9, 9, 9,
+	 				9, 9, 9, 9,    9, 9, 9, 9,
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+					9, 9, 9, 9,    9, 9, 9, 9,
+
+
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+					 0, 0, 0, 0, 0, 0, 0, 0,
+
+				    };
+
 volatile uint8_t bit_id   = 0;
 volatile uint16_t next_led = 0;
 volatile uint32_t duty_cycle = 0;
@@ -162,10 +220,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 
 volatile uint8_t transfer_finished_ifg = 0;
+volatile uint8_t buffer_change_ifg = 0;
 //#if 1
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim){
-#if 1
+#if 0
 		if (htim->Instance == TIM3) {
+
+//			HAL_DMA_Abort(htim->hdma[TIM_DMA_ID_CC1]);
+
+/*fix posible bug with */
+
+//__disable_irq();
+/* might not be necessary */
+
+ htim->hdma[TIM_DMA_ID_CC1]->XferCpltCallback = NULL;
+ HAL_TIM_PWM_Stop_DMA( htim,TIM_CHANNEL_1)L
+// __enable_irq();
+
+		//	__HAL_DMA_DISABLE(htim->hdma[TIM_DMA_ID_CC1]);
+			transfer_finished_ifg = 1;
 
 		}
 		// if ( pwm_buffer[0] == 8)
@@ -230,31 +303,25 @@ volatile uint8_t color_swap = 0;
 		blink_counter = HAL_GetTick()+ 500;
 		GPIOC->ODR ^= GPIO_PIN_8;
 
-		if (pwm_buffer[46] == 9)
-			pwm_buffer[46] = 17;
-		else
-			pwm_buffer[46] = 9;
 
-// 		if (transfer_finished_ifg){
-// //			HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_1);
-//
-// 			transfer_finished_ifg = 0;
-// 			//GPIOA->ODR &= ~GPIO_PIN_6;
-// 			//HAL_Delay(500);
-// 			if (color_swap){
-// 				color_swap = 0;
-// 				//memcpy(pwm_buffer, blue_color,sizeof(blue_color));
-// 			//	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer1[0]), DMA_LED_LEN);
-//
-// 			}else{
-// 			//	memcpy(pwm_buffer, red_color,sizeof(blue_color));
-//
-// 			//	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)(&pwm_buffer[0]), DMA_LED_LEN);
-// 				color_swap = 1;
-// 			}
-//
-// 		}
-    }
+		transfer_finished_ifg = 0;
+		if (pwm_buffer[46] == 9){
+			pwm_buffer[46] = 17;
+			buffer_change_ifg = 0;
+		}
+		else{
+			pwm_buffer[46] = 9;
+		}
+
+ 		if (transfer_finished_ifg) {
+
+
+			// HAL_DMA_Start(htim3.hdma[TIM_DMA_ID_CC1],
+				// (uint32_t *)(&pwm_buffer[0]),
+				// (uint32_t *)(&(htim3.Instance->CCR1)),DMA_LED_LEN);
+
+		}
+	}
   }
   /* USER CODE END 3 */
 }
