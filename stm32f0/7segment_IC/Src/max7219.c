@@ -1,12 +1,17 @@
+#include <stdint.h>
+#include <stdlib.h>
+
 #include "max7219.h"
 #include "max7219_cmd.h"
+
+
 #include "stm32f0xx_hal.h"
-#include <stdint.h>
+
 #define P_SPI &hspi1
 
 extern SPI_HandleTypeDef hspi1;
-#define max7219_CS_LOW  GPIOC->ODR &=~GPIO_PIN_4
-#define max7219_CS_HIGH GPIOC->ODR |=GPIO_PIN_4
+#define max7219_CS_LOW  GPIOA->ODR &=~GPIO_PIN_6
+#define max7219_CS_HIGH GPIOA->ODR |= GPIO_PIN_6
 void max7219_send_cmd(uint8_t cmd, uint8_t data)
 {
 	uint8_t frame_out [2];
@@ -27,8 +32,11 @@ void max7219_init(void)
 
 
 	/*decode mode applied to all 7 digits: only d0-d3 are needed*/
+#ifdef MAX7218_SEVEN_DISPLAY_MODE
 	max7219_send_cmd(CMD_DECODE_MODE, 0XFF);
-
+#else /*8x8 dot matrix*/
+	max7219_send_cmd(CMD_DECODE_MODE, 0X00);
+#endif
 	/*intensity  duty cycle 5/32 */
 	max7219_send_cmd (CMD_INTENSITY, 0);
 	/*scan limit: only digits  0-2 */
@@ -60,10 +68,11 @@ void max7219_init(void)
 
 	max7219_send_cmd (CMD_DIGIT_3 , 0X00);
 
-	max7219_send_cmd (CMD_DIGIT_4 , 0X04);
-	max7219_send_cmd (CMD_DIGIT_5 , 0X03);
-	max7219_send_cmd (CMD_DIGIT_6 , 0X02);
-	max7219_send_cmd (CMD_DIGIT_7 , 0X01);
+	max7219_send_cmd (CMD_DIGIT_4 , 0X00);
+	max7219_send_cmd (CMD_DIGIT_5 , 0X00);
+	max7219_send_cmd (CMD_DIGIT_6 , 0X00);
+	max7219_send_cmd (CMD_DIGIT_7 , 0X00);
+	srand(50);
 
 }
 
@@ -93,6 +102,35 @@ void show_seconds(void)
 	if ( HAL_GetTick() >seconds){
 		seconds = HAL_GetTick() +1000;
 		max7219_display_number(display_seconds++,0);
+	}
+
+}
+void show_animation(void)
+{
+	static uint32_t seconds = 0;
+	uint8_t dot_animation    = 0;
+
+
+	if ( HAL_GetTick() >seconds){
+		seconds = HAL_GetTick() + 800;
+
+		dot_animation = rand()%0xff;
+		max7219_send_cmd (CMD_DIGIT_0 , dot_animation );
+		dot_animation = rand()%0xff;
+		max7219_send_cmd (CMD_DIGIT_1 , dot_animation );
+		dot_animation = rand()%0xff;
+		max7219_send_cmd (CMD_DIGIT_2 , dot_animation );
+		dot_animation = rand()%0xff;
+		max7219_send_cmd (CMD_DIGIT_3 , dot_animation );
+		dot_animation = rand()%0xff;
+		max7219_send_cmd (CMD_DIGIT_4 , dot_animation );
+		dot_animation = rand()%0xff;
+		max7219_send_cmd (CMD_DIGIT_5 , dot_animation );
+		dot_animation = rand()%0xff;
+		max7219_send_cmd (CMD_DIGIT_6 , dot_animation );
+		dot_animation = rand()%0xff;
+		max7219_send_cmd (CMD_DIGIT_7 , dot_animation );
+
 	}
 
 }
