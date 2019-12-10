@@ -81,6 +81,7 @@ void watchdog_window_set(uint32_t wdt_time_ms)
 	soft_wdt.window_ms = wdt_time_ms;
 }
 
+
 static void setup_stm_wdt(void) /*taken from stmcubemx*/
 {
 	hwwdg.Instance       = WWDG;
