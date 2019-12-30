@@ -11,7 +11,7 @@
 **
 **  Environment : System Workbench for MCU
 **
-**  Distribution: The file is distributed “as is,” without any warranty
+**  Distribution: The file is distributed ï¿½as is,ï¿½ without any warranty
 **                of any kind.
 **
 *****************************************************************************
@@ -53,6 +53,11 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
+#include "stm32xxhal.h"
+#define DEBUG_HANDLER huart1
+#define DEBUG_PTR_HANDLER &DEBUG_HANDLER
+
+extern UART_HandleTypeDef DEBUG_HANDLER;
 
 /* Variables */
 //#undef errno
@@ -103,11 +108,10 @@ return len;
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
 	int DataIdx;
+	UNUSED(DataIdx);
+	UNUSED(file);
 
-	for (DataIdx = 0; DataIdx < len; DataIdx++)
-	{
-		__io_putchar(*ptr++);
-	}
+	HAL_UART_Transmit( DEBUG_PTR_HANDLER, (uint8_t *) ptr, len, HAL_MAX_DELAY);
 	return len;
 }
 
