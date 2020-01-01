@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "dial_encoder.h"
-#include "stm32f0xxhal.h"
+#include "stm32f0xx_hal.h"
 
 #define DIAL_A_PIN     GPIO_PIN_0
 #define DIAL_B_PIN     GPIO_PIN_1
@@ -54,15 +54,18 @@ void dial_encoder_service(void)
 {
 	if (!dial.changed_event) {return;}
 
-	if(dial.dial_a_pulse){
+	if(dial.dial_a_pulse) {
 		printf("pulse A\r\n");
+		dial.dial_a_pulse = false;
 	}
 
-	if (dial.dial_b_pulse){
+	if (dial.dial_b_pulse) {
 		printf("pulse B\r\n");
+		dial.dial_b_pulse = false;
 	}
 
 	if (dial.enter_pressed){
 		printf("pulse ENTER\r\n");
+		dial.enter_pressed = false;
 	}
 }

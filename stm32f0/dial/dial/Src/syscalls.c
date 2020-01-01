@@ -53,12 +53,10 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
-#include "stm32xxhal.h"
-#define DEBUG_HANDLER huart1
-#define DEBUG_PTR_HANDLER &DEBUG_HANDLER
 
-extern UART_HandleTypeDef DEBUG_HANDLER;
-
+#include "stm32f0xx_hal.h"
+#define UART_DBG_PORT &huart2
+extern UART_HandleTypeDef huart2;
 /* Variables */
 //#undef errno
 extern int errno;
@@ -107,11 +105,10 @@ return len;
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
-	int DataIdx;
-	UNUSED(DataIdx);
-	UNUSED(file);
+	//int DataIdx;
 
-	HAL_UART_Transmit( DEBUG_PTR_HANDLER, (uint8_t *) ptr, len, HAL_MAX_DELAY);
+	HAL_UART_Transmit( UART_DBG_PORT, (uint8_t *) ptr, len, HAL_MAX_DELAY);
+
 	return len;
 }
 
