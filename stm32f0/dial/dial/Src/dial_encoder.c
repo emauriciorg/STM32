@@ -48,7 +48,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		return;
 	}
 
-	uint32_t delay_isr = 1000;
+	uint32_t delay_isr = 10000;
 
 	while (delay_isr--);
 	uint32_t dial_level_a =DIAL_A_LEVEL;
@@ -64,20 +64,30 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 
 	if (GPIO_Pin == DIAL_B_PIN) {
-		dial.dial_a_pulse = 0;
-		dial.dial_b_pulse = 0;
-		return;
 		dial.dial_b_pulse  = true;
 		dial.changed_event = true;
 	}
 
-	if(dial.dial_a_pulse &&
-	((dial_level_b && dial_level_a) ||((!dial_level_b) && (!dial_level_a)))){
-		dial.direction = DIAL_LEFT;
-		if (dial.steps_right) dial.steps_right--;
-		dial.steps_left++;
-	}else{
-		if ((((!dial_level_b) && dial_level_a) ||((dial_level_b) && (dial_level_a)))){
+	if(dial.dial_a_pulse){
+		if ( (dial_level_b && dial_level_a)  || ((!dial_level_b) && (!dial_level_a)) ){
+			dial.direction = DIAL_LEFT;
+			if (dial.steps_right) dial.steps_right--;
+			dial.steps_left++;
+		}
+		if ( ((!dial_level_b) && dial_level_a) || ((dial_level_b) && (dial_level_a)) ){
+			dial.direction = DIAL_RIGHT;
+			dial.steps_right++;
+			if (dial.steps_left)  dial.steps_left--;
+		}
+	}
+	if(dial.dial_b_pulse ){
+		if ( ((!dial_level_b) && dial_level_a) || ((dial_level_b) && (dial_level_a)) ){
+			dial.direction = DIAL_LEFT;
+			if (dial.steps_right) dial.steps_right--;
+			dial.steps_left++;
+
+		}
+		if ( (dial_level_b && dial_level_a) ||((!dial_level_b) && (!dial_level_a)) ){
 
 			dial.direction = DIAL_RIGHT;
 			dial.steps_right++;

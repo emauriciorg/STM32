@@ -243,11 +243,17 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, LD4_Pin|LD3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : DIAL_ENTER_Pin DIAL_A_Pin DIAL_B_Pin */
-  GPIO_InitStruct.Pin = DIAL_ENTER_Pin|DIAL_A_Pin|DIAL_B_Pin;
+  /*Configure GPIO pins : DIAL_ENTER_Pin DIAL_B_Pin */
+  GPIO_InitStruct.Pin = DIAL_ENTER_Pin|DIAL_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : DIAL_A_Pin */
+  GPIO_InitStruct.Pin = DIAL_A_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(DIAL_A_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LD4_Pin LD3_Pin */
   GPIO_InitStruct.Pin = LD4_Pin|LD3_Pin;
@@ -263,8 +269,8 @@ static void MX_GPIO_Init(void)
   HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 
-  // HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
-  // HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 
 }
 
