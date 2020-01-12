@@ -58,6 +58,15 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define DIAL_ENTER_Pin GPIO_PIN_0
+#define DIAL_ENTER_GPIO_Port GPIOB
+#define DIAL_ENTER_EXTI_IRQn EXTI0_1_IRQn
+#define DIAL_A_Pin GPIO_PIN_2
+#define DIAL_A_GPIO_Port GPIOB
+#define DIAL_A_EXTI_IRQn EXTI2_3_IRQn
+#define DIAL_B_Pin GPIO_PIN_10
+#define DIAL_B_GPIO_Port GPIOB
+#define DIAL_B_EXTI_IRQn EXTI4_15_IRQn
 #define LD4_Pin GPIO_PIN_8
 #define LD4_GPIO_Port GPIOC
 #define LD3_Pin GPIO_PIN_9

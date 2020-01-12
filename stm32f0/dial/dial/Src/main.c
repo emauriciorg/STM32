@@ -77,8 +77,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
-	HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
   setvbuf(stdout, NULL, _IOLBF, 0);//_IONBF
@@ -107,8 +106,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	dial_encoder_service();
+
     /* USER CODE BEGIN 3 */
+    dial_encoder_service();
   }
   /* USER CODE END 3 */
 }
@@ -243,14 +243,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, LD4_Pin|LD3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PB0 PB1 PB2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  /*Configure GPIO pins : DIAL_ENTER_Pin DIAL_A_Pin DIAL_B_Pin */
+  GPIO_InitStruct.Pin = DIAL_ENTER_Pin|DIAL_A_Pin|DIAL_B_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  // GPIO_PULLUP
-  // GPIO_PULLDOWN
   /*Configure GPIO pins : LD4_Pin LD3_Pin */
   GPIO_InitStruct.Pin = LD4_Pin|LD3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -264,6 +262,9 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+
+  // HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
+  // HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 
 }
 

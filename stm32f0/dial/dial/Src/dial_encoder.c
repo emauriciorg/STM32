@@ -6,9 +6,10 @@
 #include "dial_encoder.h"
 #include "stm32f0xx_hal.h"
 
-#define DIAL_A_PIN     GPIO_PIN_0
-#define DIAL_B_PIN     GPIO_PIN_1
-#define DIAL_ENTER_PIN GPIO_PIN_2
+#define DIAL_A_PIN     GPIO_PIN_2
+#define DIAL_B_PIN     GPIO_PIN_10
+#define DIAL_ENTER_PIN GPIO_PIN_0
+
 #define DIAL_B_PORT    GPIOB
 #define DIAL_A_PORT    GPIOB
 #define DIAL_B_LEVEL DIAL_B_PORT->IDR & DIAL_B_PIN
@@ -18,10 +19,11 @@
 #define DIAL_B_CODE 10
 
 enum dial_directioon{
+	DIAL_STOP = 0X00,
 	DIAL_LEFT  = 0X01,
 	DIAL_RIGHT = 0X10
 };
-struct dial_st{
+volatile struct dial_st{
 	uint8_t direction;
 	uint8_t dial_first;
 	uint8_t  dial_a_pulse;
@@ -42,8 +44,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		dial.enter_pressed  = true;
 		dial.enter_released = false;
 		dial.changed_event  = true;
+		dial.direction =DIAL_STOP;
 		return;
 	}
+
+	uint32_t delay_isr = 1000;
+
+	while (delay_isr--);
 	uint32_t dial_level_a =DIAL_A_LEVEL;
 	uint32_t dial_level_b =DIAL_B_LEVEL;
 
@@ -65,17 +72,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	}
 
 	if(dial.dial_a_pulse &&
-	((DIAL_B_LEVEL && dial_level_a) ||(!DIAL_B_LEVEL && !dial_level_a))){
+	((dial_level_b && dial_level_a) ||((!dial_level_b) && (!dial_level_a)))){
 		dial.direction = DIAL_LEFT;
 		if (dial.steps_right) dial.steps_right--;
 		dial.steps_left++;
 	}else{
-		dial.direction = DIAL_RIGHT;
-		dial.steps_right++;
-		if (dial.steps_left)  dial.steps_left--;
+		if ((((!dial_level_b) && dial_level_a) ||((dial_level_b) && (dial_level_a)))){
+
+			dial.direction = DIAL_RIGHT;
+			dial.steps_right++;
+			if (dial.steps_left)  dial.steps_left--;
+		}
 	}
-	if(dial.dial_b_pulse &&
-	((DIAL_B_LEVEL && dial_level_a) ||(!DIAL_B_LEVEL && !dial_level_a))){
+//	if(dial.dial_b_pulse &&
+	//((DIAL_B_LEVEL && dial_level_a) ||(!DIAL_B_LEVEL && !dial_level_a))){
 
 	dial.changed_event = true;
 	dial.dial_a_pulse = 0;
@@ -110,6 +120,7 @@ void dial_encoder_service(void)
 		printf("Rsteps %d\r\n",dial.steps_right);
 
 	}
+
 	if (dial.enter_pressed){
 		printf("pulse ENTER\r\n");
 		dial.enter_pressed = false;
