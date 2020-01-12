@@ -40,24 +40,27 @@ volatile struct dial_st{
 /*to do , only rising edge*/
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+
+	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI0_1_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
+
 	if (GPIO_Pin == DIAL_ENTER_PIN){
 		dial.enter_pressed  = true;
 		dial.enter_released = false;
 		dial.changed_event  = true;
 		dial.direction =DIAL_STOP;
-		return;
 	}
 
-	uint32_t delay_isr = 10000;
+/*TODO: implement debounce circuit, meanwhile use this digital debounce*/
+#ifdef SOFT_DEBOUNCER
+	uint32_t delay_isr = 240000;
+	while (delay_isr)delay_isr--;
+	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
+#endif /*SOFT_DEBOUNCER*/
 
-	while (delay_isr--);
 	uint32_t dial_level_a =DIAL_A_LEVEL;
 	uint32_t dial_level_b =DIAL_B_LEVEL;
-
-	if(GPIO_Pin == DIAL_B_PIN){
-		return;
-	}
-
 
  	if (GPIO_Pin == DIAL_A_PIN){
 		dial.dial_a_pulse  = true;
@@ -65,7 +68,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 	if (GPIO_Pin == DIAL_B_PIN) {
 		dial.dial_b_pulse  = true;
-		dial.changed_event = true;
 	}
 
 	if(dial.dial_a_pulse){
@@ -73,29 +75,36 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			dial.direction = DIAL_LEFT;
 			if (dial.steps_right) dial.steps_right--;
 			dial.steps_left++;
-		}
-		if ( ((!dial_level_b) && dial_level_a) || ((dial_level_b) && (dial_level_a)) ){
+		}else
+		if ( ((!dial_level_b) && dial_level_a) || ((dial_level_b) && (!dial_level_a)) ){
 			dial.direction = DIAL_RIGHT;
 			dial.steps_right++;
 			if (dial.steps_left)  dial.steps_left--;
+		}else{
+			dial.dial_b_pulse  = dial.dial_b_pulse ;
+
 		}
-	}
+	}else
 	if(dial.dial_b_pulse ){
-		if ( ((!dial_level_b) && dial_level_a) || ((dial_level_b) && (dial_level_a)) ){
+		if ( ((!dial_level_b) && dial_level_a) || ((dial_level_b) && (!dial_level_a)) ){
 			dial.direction = DIAL_LEFT;
 			if (dial.steps_right) dial.steps_right--;
 			dial.steps_left++;
 
-		}
+		}else
 		if ( (dial_level_b && dial_level_a) ||((!dial_level_b) && (!dial_level_a)) ){
 
 			dial.direction = DIAL_RIGHT;
 			dial.steps_right++;
 			if (dial.steps_left)  dial.steps_left--;
+		}else{
+			dial.dial_b_pulse  = dial.dial_b_pulse ;
 		}
 	}
-//	if(dial.dial_b_pulse &&
-	//((DIAL_B_LEVEL && dial_level_a) ||(!DIAL_B_LEVEL && !dial_level_a))){
+
+	HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 
 	dial.changed_event = true;
 	dial.dial_a_pulse = 0;
