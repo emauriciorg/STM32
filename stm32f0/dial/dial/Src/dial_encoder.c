@@ -15,6 +15,9 @@
 #define DIAL_B_LEVEL     DIAL_B_PORT->IDR & DIAL_B_PIN
 #define DIAL_A_LEVEL     DIAL_A_PORT->IDR & DIAL_A_PIN
 
+/*app specific macro, used to see a full turn or control the level of something
+lets say sound volume, see  dial.steps*/
+#define DIAL_STEP_LIMIT 100
 
 enum dial_directioon{
 	DIAL_IDLE  = 0X00;
@@ -94,10 +97,12 @@ void dial_step_count(struct dial_st &ptr_dial)
 {
 	if(ptr_dial->direction == DIAL_RIGHT){
 		ptr_dial->steps_left++;
+		if (ptr_dial->steps < DIAL_STEP_LIMIT) ptr_dial->steps++;
 		if (ptr_dial->steps_right) ptr_dial->steps_right--;
 	}else{
 		ptr_dial->steps_right++;
 		if (ptr_dial->steps_left)  ptr_dial->steps_left--;
+		if (ptr_dial->steps) ptr_dial->steps--;
 	}
 }
 
