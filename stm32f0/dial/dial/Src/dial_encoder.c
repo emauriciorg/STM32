@@ -12,8 +12,8 @@
 
 #define DIAL_B_PORT      GPIOB
 #define DIAL_A_PORT      GPIOB
-#define DIAL_B_LEVEL     DIAL_B_PORT->IDR & DIAL_B_PIN
-#define DIAL_A_LEVEL     DIAL_A_PORT->IDR & DIAL_A_PIN
+#define DIAL_B_LEVEL     !!(DIAL_B_PORT->IDR & DIAL_B_PIN))
+#define DIAL_A_LEVEL     !!(DIAL_A_PORT->IDR & DIAL_A_PIN))
 
 /*app specific macro, used to see a full turn or control the level of something
 lets say sound volume, see  dial.steps*/
@@ -61,8 +61,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	__HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
 #endif /*SOFT_DEBOUNCER*/
 
-	uint8_t dial_level_a = !!DIAL_A_LEVEL;
-	uint8_t dial_level_b = !!DIAL_B_LEVEL;
+	uint8_t dial_level_a = DIAL_A_LEVEL;
+	uint8_t dial_level_b = DIAL_B_LEVEL;
 
  	if (GPIO_Pin == DIAL_A_PIN){
 		dir.rising  = DIAL_LEFT;
@@ -93,6 +93,7 @@ void dial_direction_check_a(uint8_t signal_a, uint8_t signal_b, uint8_t r_true, 
 	}
 }
 
+
 void dial_step_count(struct dial_st &ptr_dial)
 {
 	if(ptr_dial->direction == DIAL_RIGHT){
@@ -112,21 +113,25 @@ void dial_encoder_init(void)
 
 }
 
+
 uint8_t dial_get_direction(void)
 {
 	return dial.direction;
 }
+
 
 uint8_t dial_get_button_state(void)
 {
 	return dial.enter_pressed;
 }
 
+
 uint8_t dial_reset_steps(void)
 {
 	dial.steps_left  = 0;
 	dial.steps_right = 0;
 }
+
 
 void dial_encoder_service(void)
 {
