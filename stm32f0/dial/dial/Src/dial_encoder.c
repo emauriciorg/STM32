@@ -12,18 +12,18 @@
 
 #define DIAL_B_PORT      GPIOB
 #define DIAL_A_PORT      GPIOB
-#define DIAL_B_LEVEL     !!(DIAL_B_PORT->IDR & DIAL_B_PIN))
-#define DIAL_A_LEVEL     !!(DIAL_A_PORT->IDR & DIAL_A_PIN))
+#define DIAL_B_LEVEL     (!!(DIAL_B_PORT->IDR & DIAL_B_PIN)))
+#define DIAL_A_LEVEL     (!!(DIAL_A_PORT->IDR & DIAL_A_PIN)))
 
 /*app specific macro, used to see a full turn or control the level of something
 lets say sound volume, see  dial.steps*/
 #define DIAL_STEP_LIMIT 100
 
 enum dial_directioon{
-	DIAL_IDLE  = 0X00;
+	DIAL_IDLE  = 0X00,
 	DIAL_ENTER  = 0X01,
 	DIAL_LEFT  = 0X10,
-	DIAL_RIGHT = 0X11
+	DIAL_RIGHT = 0X11,
 };
 
 
@@ -130,6 +130,7 @@ uint8_t dial_reset_steps(void)
 {
 	dial.steps_left  = 0;
 	dial.steps_right = 0;
+	return true;
 }
 
 

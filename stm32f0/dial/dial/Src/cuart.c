@@ -76,6 +76,13 @@ static struct {
 } protocol={'#','*', 0,0,0,0,0, {0},{0},{0},0};
 
 
+int _write(int file, char *ptr, int len)
+{
+
+	HAL_UART_Transmit( UART_DBG_PORT, (uint8_t *) ptr, len, HAL_MAX_DELAY);
+
+	return len;
+}
 
 uint8_t dbg_register_task(void (*task_routine)(void), uint8_t *task_command, uint8_t args)
 {
@@ -224,10 +231,6 @@ void dbg_setup(void)
 	task_pool.limit = MAX_TASK;
 }
 
-int _write(int file, char *ptr, int len)
-{
-	HAL_UART_Transmit( UART_DBG_PORT, (uint8_t *) ptr, len, HAL_MAX_DELAY);
-}
 
 void dbg_message(char *tx_data, uint16_t len)
 {

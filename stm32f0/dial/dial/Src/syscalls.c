@@ -107,7 +107,6 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
 	//int DataIdx;
 
-	HAL_UART_Transmit( UART_DBG_PORT, (uint8_t *) ptr, len, HAL_MAX_DELAY);
 
 	return len;
 }
