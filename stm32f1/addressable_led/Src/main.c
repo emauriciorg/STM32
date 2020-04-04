@@ -39,20 +39,123 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define BLINK_PERIOD_LED ((uint32_t)1000)
+typedef struct{
+	uint16_t *pwm_table;
+	uint16_t index;
+	uint16_t size;
+}pwm_list_t;
+
+/*pwm single signal, */
+//#define ONE_SEC_TESD
+#define ADDRESSABLE_LED
+
+#ifdef ADDRESSABLE_LED
+	#define TIMER_PERIOD 12
+	#define TIMER_PRESCALER 7
+
+	#define W1 8
+	#define W0 4
+
+	#define PWM_PERIOD  W0
+	#define BLINK_PERIOD_LED ((uint32_t)10)
+	//4 IS ZERO 8 IS 1
+	uint16_t pwm_value[72] ={
+		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W1,W1,W1,W1,W1,W1,W1,
+
+		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W1,W1,W1,W1,
+
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W1,W1,W1,W1,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0
+
+	};
+#endif
+#ifdef ONE_SEC_TESD
+	#define TIMER_PERIOD 1000
+	#define TIMER_PRESCALER 640
+	#define PWM_PERIOD  20
+	#define BLINK_PERIOD_LED ((uint32_t)10)
+	uint16_t pwm_value[69] =
+/*	{0000  , 0000 ,  0000,
+	 0000  , 0000 ,  0000,
+	 4000  , 0000 ,  2000,
+	 1000  ,  200 ,  1000,
+	 2000  , 0000 ,  4000,
+	 5000  , 0000 ,  7000,
+	 8000  , 0000 ,  9980};
+*/
+{
+ 20  ,  20 ,  20,
+ 50  ,  50 ,  50,
+ 100  ,  100 ,  100,
+ 200  ,  200 ,  200,
+ 300  , 300 ,  300,
+ 400  , 400 ,  400,
+ 500  , 500 ,  500,
+ 600  , 600 ,  600,
+ 700  , 700 ,  700,
+ 800  , 800 ,  800,
+ 900  , 900 ,  900,
+
+ 990  , 990 ,  990,
+ 900  , 900 ,  900,
+ 800  , 800 ,  800,
+ 700  , 700 ,  700,
+ 600  , 600 ,  600,
+ 500  , 500 ,  500,
+ 400  , 400 ,  400,
+ 300  , 300 ,  300,
+ 200  , 200 ,  200,
+ 100  ,  100 ,  100,
+ 50  ,  50 ,  50,
+ 20  ,  20 ,  20,
+};
+
+#endif
+
+pwm_list_t pwm_list= {pwm_value, 0,(sizeof(pwm_value)/2)-1};
 
 volatile uint32_t blink_period = BLINK_PERIOD_LED;
+
+ void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance ==TIM3 ){
+		//pwm_list.pwm_table = 0;
+	}
+}
+
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance ==TIM3 ){
+		//pwm_list.pwm_table = 0;
+	}
+}
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 
-	if (blink_period){
-		blink_period--;
+
+
+	// if (blink_period){
+		// blink_period--;
+		// return;
+	// }
+#ifdef USE_TIMER_NOT_DMA
+	if (pwm_list.index < pwm_list.size )
+	{
+		pwm_list.index++;
+	}else{
+		pwm_list.index = 0;
 	}
-	else{
-		blink_period = BLINK_PERIOD_LED;
-		GPIOC->ODR ^=GPIO_PIN_13;
-	}
+	TIM3->CCR4 = pwm_list.pwm_table[pwm_list.index];
+#endif
+	blink_period = BLINK_PERIOD_LED;
+	GPIOC->ODR ^=GPIO_PIN_13;
 }
 // GPIOC->ODR ^=GPIO_PIN_13;
 
@@ -60,6 +163,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim3;
+DMA_HandleTypeDef hdma_tim3_ch4_up;
 
 UART_HandleTypeDef huart1;
 
@@ -70,6 +174,7 @@ UART_HandleTypeDef huart1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
@@ -110,13 +215,16 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 	uint32_t seconds = 0;
-	HAL_TIM_Base_Start(&htim3);
-	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_2);
-	printf("Program stars!!\r\n" );
+	HAL_TIM_Base_Start_IT(&htim3);
+	//HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_4);
+	printf("Program stars !!\r\n" );
+	printf("PWM table size[%d] !!\r\n",sizeof(pwm_value)/2 );
+	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_4, (uint32_t *)pwm_value, sizeof(pwm_value)/2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -192,11 +300,11 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 64;
+  htim3.Init.Prescaler = TIMER_PRESCALER;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1000;
+  htim3.Init.Period = TIMER_PERIOD;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -208,10 +316,15 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 1000;
+  sConfigOC.Pulse = PWM_PERIOD;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.Pulse = PWM_PERIOD;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -256,6 +369,22 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -267,6 +396,7 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
