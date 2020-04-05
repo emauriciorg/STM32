@@ -50,29 +50,122 @@ typedef struct{
 #define ADDRESSABLE_LED
 
 #ifdef ADDRESSABLE_LED
-	#define TIMER_PERIOD 12
-	#define TIMER_PRESCALER 7
+	#define TIMER_PERIOD ((SystemCoreClock / 800000) - 1)
+	#define TIMER_PRESCALER 0
 
-	#define W1 8
-	#define W0 4
+	#define W1 52
+	#define W0 26
+//	uint32_t uhTimerPeriod = (uint32_t)((SystemCoreClock / 800000) - 1); //to get
 
 	#define PWM_PERIOD  W0
 	#define BLINK_PERIOD_LED ((uint32_t)10)
 	//4 IS ZERO 8 IS 1
-	uint16_t pwm_value[72] ={
+	uint16_t pwm_value[] ={
+
 		W0,W0,W0,W0,W1,W1,W1,W1,
 		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W1,W1,W1,W1,W1,W1,W1,
-
-		W0,W0,W0,W0,W1,W1,W1,W1,
-		W0,W0,W0,W0,W1,W1,W1,W1,
-		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W0,W0,W0,W0,
 
 		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W1,W1,W1,W1,W0,W0,
-		W0,W0,W0,W0,W0,W0,W0,W0
+		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W0,W0,W0,W0,
 
-	};
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W1,W1,W1,W1,W1,
+
+		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W1,W1,W1,W1,
+
+
+
+			W0,W0,W0,W0,W1,W1,W0,W1,
+			W0,W1,W0,W0,W1,W0,W0,W0,
+			W0,W0,W0,W1,W0,W1,W0,W0,
+
+			W0,W0,W0,W1,W0,W0,W0,W0,
+			W0,W0,W0,W1,W0,W0,W0,W0,
+			W0,W0,W0,W1,W0,W0,W0,W0,
+
+			W0,W0,W0,W1,W0,W0,W0,W0,
+			W0,W0,W0,W0,W0,W0,W0,W0,
+			W0,W0,W0,W1,W0,W0,W0,W0,
+
+			W0,W0,W0,W0,W1,W1,W1,W1,
+			W0,W0,W1,W1,W0,W0,W0,W0,
+			W0,W0,W0,W0,W1,W1,W1,W1,
+
+			W0,W0,W0,W1,W0,W0,W0,W0,
+			W0,W0,W0,W0,W1,W0,W0,W0,
+			W0,W0,W0,W1,W0,W1,W1,W0,
+
+		0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,
+
+		0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,
+
+		0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0
+};
+
+
+uint16_t pwm_value_2[] ={
+
+	W0,W0,W0,W0,W1,W1,W1,W1,
+	W0,W0,W0,W0,W0,W0,W0,W0,
+	W0,W0,W0,W0,W0,W0,W0,W0,
+
+	W0,W0,W0,W0,W0,W0,W0,W0,
+	W0,W0,W0,W0,W1,W1,W1,W1,
+	W0,W0,W0,W0,W0,W0,W0,W0,
+
+	W0,W0,W0,W0,W0,W0,W0,W0,
+	W0,W0,W0,W0,W0,W0,W0,W0,
+	W0,W0,W0,W1,W1,W1,W1,W1,
+
+	W0,W0,W0,W0,W1,W1,W1,W1,
+	W0,W0,W0,W0,W0,W0,W0,W0,
+	W0,W0,W0,W0,W1,W1,W1,W1,
+
+
+
+		W0,W0,W1,W0,W1,W1,W0,W1,
+		W0,W1,W0,W0,W1,W0,W0,W0,
+		W0,W0,W1,W0,W0,W1,W0,W0,
+
+		W1,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W1,W0,W0,W0,W0,W0,
+		W0,W0,W1,W0,W0,W0,W0,W0,
+
+		W0,W0,W0,W1,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W1,W0,W0,W0,W0,
+
+		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W1,W1,W1,W0,W0,W0,W0,
+		W0,W0,W0,W0,W1,W1,W1,W1,
+
+		W0,W1,W0,W1,W0,W0,W0,W0,
+		W0,W0,W1,W0,W1,W0,W0,W0,
+		W0,W0,W0,W1,W0,W1,W1,W0,
+
+	0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,
+
+	0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,
+
+	0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0
+};
 #endif
 #ifdef ONE_SEC_TESD
 	#define TIMER_PERIOD 1000
@@ -123,16 +216,17 @@ volatile uint32_t blink_period = BLINK_PERIOD_LED;
 
  void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *htim)
 {
-	if (htim->Instance ==TIM3 ){
-		//pwm_list.pwm_table = 0;
-	}
+	// if (htim->Instance ==TIM3 ){
+	//	pwm_list.pwm_table = 0;
+	// }
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
-	if (htim->Instance ==TIM3 ){
-		//pwm_list.pwm_table = 0;
-	}
+	//HAL_TIM_PWM_Stop_DMA(&htim3, TIM_CHANNEL_4);
+	// if (htim->Instance ==TIM3 ){
+		// pwm_list.pwm_table = 0;
+	// }
 }
 
 
@@ -220,9 +314,11 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 	uint32_t seconds = 0;
-	HAL_TIM_Base_Start_IT(&htim3);
+//	HAL_TIM_Base_Start_IT(&htim3);
+	HAL_TIM_Base_Start(&htim3);
+
 	//HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_4);
-	printf("Program stars !!\r\n" );
+	printf("Program stars!!\r\n" );
 	printf("PWM table size[%d] !!\r\n",sizeof(pwm_value)/2 );
 	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_4, (uint32_t *)pwm_value, sizeof(pwm_value)/2);
   /* USER CODE END 2 */
@@ -316,9 +412,12 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = PWM_PERIOD;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity   = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode   = TIM_OCFAST_ENABLE;
+  sConfigOC.OCIdleState  = TIM_OCIDLESTATE_SET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
