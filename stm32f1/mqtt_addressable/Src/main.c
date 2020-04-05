@@ -25,6 +25,8 @@
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
 #include <stdio.h>
+#include "ws2812b.h"
+#include "cuart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -39,186 +41,11 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-typedef struct{
-	uint16_t *pwm_table;
-	uint16_t index;
-	uint16_t size;
-}pwm_list_t;
-
-/*pwm single signal, */
-//#define ONE_SEC_TESD
-#define mqtt_interface
-
-#ifdef mqtt_interface
-	#define TIMER_PERIOD ((SystemCoreClock / 800000) - 1)
-	#define TIMER_PRESCALER 0
-
-	#define W1 52
-	#define W0 26
-//	uint32_t uhTimerPeriod = (uint32_t)((SystemCoreClock / 800000) - 1); //to get
-
-	#define PWM_PERIOD  W0
-	#define BLINK_PERIOD_LED ((uint32_t)10)
-	//4 IS ZERO 8 IS 1
-	uint16_t pwm_value[] ={
-
-		W0,W0,W0,W0,W1,W1,W1,W1,
-		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W0,W0,W0,W0,W0,
-
-		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W0,W1,W1,W1,W1,
-		W0,W0,W0,W0,W0,W0,W0,W0,
-
-		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W1,W1,W1,W1,W1,
-
-		W0,W0,W0,W0,W1,W1,W1,W1,
-		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W0,W1,W1,W1,W1,
 
 
-
-			W0,W0,W0,W0,W1,W1,W0,W1,
-			W0,W1,W0,W0,W1,W0,W0,W0,
-			W0,W0,W0,W1,W0,W1,W0,W0,
-
-			W0,W0,W0,W1,W0,W0,W0,W0,
-			W0,W0,W0,W1,W0,W0,W0,W0,
-			W0,W0,W0,W1,W0,W0,W0,W0,
-
-			W0,W0,W0,W1,W0,W0,W0,W0,
-			W0,W0,W0,W0,W0,W0,W0,W0,
-			W0,W0,W0,W1,W0,W0,W0,W0,
-
-			W0,W0,W0,W0,W1,W1,W1,W1,
-			W0,W0,W1,W1,W0,W0,W0,W0,
-			W0,W0,W0,W0,W1,W1,W1,W1,
-
-			W0,W0,W0,W1,W0,W0,W0,W0,
-			W0,W0,W0,W0,W1,W0,W0,W0,
-			W0,W0,W0,W1,W0,W1,W1,W0,
-
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,
-
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,
-
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0
-};
-
-
-uint16_t pwm_value_2[] ={
-
-	W0,W0,W0,W0,W1,W1,W1,W1,
-	W0,W0,W0,W0,W0,W0,W0,W0,
-	W0,W0,W0,W0,W0,W0,W0,W0,
-
-	W0,W0,W0,W0,W0,W0,W0,W0,
-	W0,W0,W0,W0,W1,W1,W1,W1,
-	W0,W0,W0,W0,W0,W0,W0,W0,
-
-	W0,W0,W0,W0,W0,W0,W0,W0,
-	W0,W0,W0,W0,W0,W0,W0,W0,
-	W0,W0,W0,W1,W1,W1,W1,W1,
-
-	W0,W0,W0,W0,W1,W1,W1,W1,
-	W0,W0,W0,W0,W0,W0,W0,W0,
-	W0,W0,W0,W0,W1,W1,W1,W1,
-
-
-
-		W0,W0,W1,W0,W1,W1,W0,W1,
-		W0,W1,W0,W0,W1,W0,W0,W0,
-		W0,W0,W1,W0,W0,W1,W0,W0,
-
-		W1,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W1,W0,W0,W0,W0,W0,
-		W0,W0,W1,W0,W0,W0,W0,W0,
-
-		W0,W0,W0,W1,W0,W0,W0,W0,
-		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W1,W0,W0,W0,W0,
-
-		W0,W0,W0,W0,W1,W1,W1,W1,
-		W0,W1,W1,W1,W0,W0,W0,W0,
-		W0,W0,W0,W0,W1,W1,W1,W1,
-
-		W0,W1,W0,W1,W0,W0,W0,W0,
-		W0,W0,W1,W0,W1,W0,W0,W0,
-		W0,W0,W0,W1,W0,W1,W1,W0,
-
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0
-};
-#endif
-#ifdef ONE_SEC_TESD
-	#define TIMER_PERIOD 1000
-	#define TIMER_PRESCALER 640
-	#define PWM_PERIOD  20
-	#define BLINK_PERIOD_LED ((uint32_t)10)
-	uint16_t pwm_value[69] =
-/*	{0000  , 0000 ,  0000,
-	 0000  , 0000 ,  0000,
-	 4000  , 0000 ,  2000,
-	 1000  ,  200 ,  1000,
-	 2000  , 0000 ,  4000,
-	 5000  , 0000 ,  7000,
-	 8000  , 0000 ,  9980};
-*/
-{
- 20  ,  20 ,  20,
- 50  ,  50 ,  50,
- 100  ,  100 ,  100,
- 200  ,  200 ,  200,
- 300  , 300 ,  300,
- 400  , 400 ,  400,
- 500  , 500 ,  500,
- 600  , 600 ,  600,
- 700  , 700 ,  700,
- 800  , 800 ,  800,
- 900  , 900 ,  900,
-
- 990  , 990 ,  990,
- 900  , 900 ,  900,
- 800  , 800 ,  800,
- 700  , 700 ,  700,
- 600  , 600 ,  600,
- 500  , 500 ,  500,
- 400  , 400 ,  400,
- 300  , 300 ,  300,
- 200  , 200 ,  200,
- 100  ,  100 ,  100,
- 50  ,  50 ,  50,
- 20  ,  20 ,  20,
-};
-
-#endif
-
-pwm_list_t pwm_list= {pwm_value, 0,(sizeof(pwm_value)/2)-1};
-
-volatile uint32_t blink_period = BLINK_PERIOD_LED;
 
  void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *htim)
 {
-	// if (htim->Instance ==TIM3 ){
-	//	pwm_list.pwm_table = 0;
-	// }
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
@@ -228,29 +55,10 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 		// pwm_list.pwm_table = 0;
 	// }
 }
-
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-
-
-
-	// if (blink_period){
-		// blink_period--;
-		// return;
-	// }
-#ifdef USE_TIMER_NOT_DMA
-	if (pwm_list.index < pwm_list.size )
-	{
-		pwm_list.index++;
-	}else{
-		pwm_list.index = 0;
-	}
-	TIM3->CCR4 = pwm_list.pwm_table[pwm_list.index];
-#endif
-	blink_period = BLINK_PERIOD_LED;
-	GPIOC->ODR ^=GPIO_PIN_13;
 }
+
 // GPIOC->ODR ^=GPIO_PIN_13;
 
 /* USER CODE END PM */
@@ -313,14 +121,22 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-	uint32_t seconds = 0;
-//	HAL_TIM_Base_Start_IT(&htim3);
-	HAL_TIM_Base_Start(&htim3);
-
-	//HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_4);
+	uint32_t seconds = HAL_GetTick();
 	printf("Program stars!!\r\n" );
-	printf("PWM table size[%d] !!\r\n",sizeof(pwm_value)/2 );
-	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_4, (uint32_t *)pwm_value, sizeof(pwm_value)/2);
+	//printf("PWM table size[%d] !!\r\n",sizeof(pwm_value)/2 );
+
+	dbg_setup();
+	start_led_sequence();
+	dbg_register_task(parse_led_color_input, "set", 'p');
+	dbg_register_task(stop_led_sequence, "stop",0);
+	dbg_register_task(start_led_sequence, "start",0);
+
+	uint8_t switch_colors = 0;
+	uint8_t led_id[9]= {0};
+	uint8_t index = 0;
+	for(index = 0;index< 9;index++) {
+		led_id[index] = index;
+	}
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -331,12 +147,79 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+	dbg_command_scan();
+	if ( HAL_GetTick() >seconds){
+		seconds = HAL_GetTick() + 600;
+		GPIOC->ODR ^=GPIO_PIN_13;
+#if 0
+#if 1
+		stop_led_sequence();
+		// if (switch_colors > 8){
+			// switch_colors = 0;
+		// }else{
+			// switch_colors++;
+		// }
+		for(index = 0;index< 9;index++) {
+			led_id[index] = led_id[index] +1;
+			if (led_id[index]>8)led_id[index]=0;
+		}
+		if (switch_colors == 1){
+			switch_colors =0;
+#if 0
+			set_color(0x0,led_id[0]);
+			set_color(0x0,led_id[1]);
+			set_color(0x0,led_id[2]);
+			set_color(0x0,led_id[3]);
+			set_color(0x0,led_id[4]);
+			set_color(0x0,led_id[5]);
+			set_color(0x0,led_id[6]);
+			set_color(0x0,led_id[7]);
+			set_color(0x0,led_id[8]);
+#endif
+			parse_led_color_input("0 000000",0);
+			parse_led_color_input("1 000000",0);
+			parse_led_color_input("2 000000",0);
+			parse_led_color_input("3 000000",0);
+			parse_led_color_input("4 000000",0);
+			parse_led_color_input("5 000000",0);
+			parse_led_color_input("6 000000",0);
+			parse_led_color_input("7 000000",0);
+			parse_led_color_input("8 000000",0);
+		}else{
+			switch_colors =1;
+			parse_led_color_input("0 000007",0);
+			parse_led_color_input("1 000700",0);
+			parse_led_color_input("2 070000",0);
+			parse_led_color_input("3 030107",0);
+			parse_led_color_input("4 000000",0);
+			parse_led_color_input("5 000000",0);
+			parse_led_color_input("6 000000",0);
+			parse_led_color_input("7 000000",0);
+			parse_led_color_input("8 000000",0);
 
-		 if ( HAL_GetTick() >seconds){
-			seconds = HAL_GetTick() + 1000;
-			printf("LOOPING \r\n");
-			/// GPIOC->ODR ^=GPIO_PIN_13;
-		 }
+#if 0
+			set_color(0x000007,led_id[0]);
+			set_color(0x000700,led_id[1]);
+			set_color(0x070000,led_id[2]);
+			set_color(0x070007,led_id[3]);
+			set_color(0x0,led_id[4]);
+			set_color(0x0,led_id[5]);
+			set_color(0x0,led_id[6]);
+			set_color(0x0,led_id[7]);
+			set_color(0x0,led_id[8]);
+#endif
+			// set_color(0x070000,led_id[2]);
+			// set_color(0x070007,led_id[3]);
+			// set_color(0x000707,led_id[4]);
+			// set_color(0x070700,led_id[5]);
+			// set_color(0x070707,led_id[6]);
+			// set_color(0x010000,led_id[7]);
+			// set_color(0x000100,led_id[8]);
+		}
+		start_led_sequence();
+#endif
+#endif
+	}
   }
   /* USER CODE END 3 */
 }
@@ -422,7 +305,7 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.Pulse = PWM_PERIOD;
+  sConfigOC.Pulse = 0;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
