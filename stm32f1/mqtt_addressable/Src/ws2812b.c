@@ -111,8 +111,8 @@ void set_color(uint32_t color_rgb, uint16_t led_id)
 	uint8_t red_color   = (color_rgb & 0xff0000)>>16;
 	uint8_t green_color = (color_rgb & 0x00ff00)>>8;
 	uint8_t blue_color  = (color_rgb & 0x0000ff);
-	set_pwm_entry_color(red_color  , &led_table[led_id][0]);
-	set_pwm_entry_color(green_color, &led_table[led_id][8]);
+	set_pwm_entry_color(red_color  , &led_table[led_id][8]);
+	set_pwm_entry_color(green_color, &led_table[led_id][0]);
 	set_pwm_entry_color(blue_color , &led_table[led_id][16]);
 }
 
@@ -132,11 +132,13 @@ void set_pwm_entry_color(uint8_t color, uint16_t *color_ptr)
 void parse_led_color_input(char *ascii_color, uint32_t *color_out){
 
 	uint8_t *p_char = 0;
+	uint8_t led_id = 0;
 	p_char = (uint8_t *) strchr((char *)ascii_color,' ');
 	//if (p_char)
 //		return  (p_char+1);
-
-	led_set_color_ascii((char *)(p_char+1),(*ascii_color)-'0',0 );
+	led_id = (uint8_t)((*ascii_color)-'0');
+	printf("Led is [%x] , color [%s]\r\n",led_id ,(char *)(p_char+1));
+	led_set_color_ascii((char *)(p_char+1),led_id,0 );
 }
 
 

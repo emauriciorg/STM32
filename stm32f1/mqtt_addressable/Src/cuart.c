@@ -15,7 +15,7 @@ extern UART_HandleTypeDef huart1;
 #define MAX_PAYLOAD_LEN           32
 #define UART_DBG_PORT        &huart1
 #define DEBUG_TIMEOUT           1000
-#define DEBUG_USART_INSTANCE USART2
+#define DEBUG_USART_INSTANCE USART1
 
 #define UART_DEBUG(...) printf(__VA_ARGS__)
 
@@ -144,7 +144,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void dbg_command_scan(void)
 {
 	if (!protocol.complete) { return;}
-
+	printf("something recieved\r\n");
 	protocol.complete	= false;
 	protocol.data_in[protocol.tail+1] = '\0';
 	protocol.command	= protocol.data_in[1];
@@ -261,7 +261,7 @@ void dbg_uart_parser(uint8_t *msg)
 		if ( !STR_CMP(msg ,cmd_str,cmd_len))
 			continue;
 
-		if (args && (task_pool.entry[task_id].args=='p')){
+		if ((task_pool.entry[task_id].args=='p')){
 			printf("executing task arg\r\n");
 			task_pool.entry[task_id].handlers.ptr_arg(get_arg_ptr(msg));
 			return;
@@ -281,5 +281,5 @@ void dbg_uart_parser(uint8_t *msg)
 		}
 		break;
 	}
-	printf("task executed\r\n");	
+	printf("task executed\r\n");
 }
