@@ -110,6 +110,8 @@ uint8_t dbg_register_task(void (*task_routine)(void), char *task_command, uint8_
 
 void dbg_store_packet(char recieved_data)
 {
+	if((recieved_data =='\r') || recieved_data =='\n')
+		return;
 	if (recieved_data == protocol.init_char) {
 
 		protocol.tail     = false;
@@ -137,6 +139,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (huart->Instance == DEBUG_USART_INSTANCE) {
 		dbg_store_packet(Rx_data[0]);
+		__HAL_UART_CLEAR_OREFLAG(UART_DBG_PORT);
 		HAL_UART_Receive_IT(huart, (uint8_t *)Rx_data, 1);
 	}
 }

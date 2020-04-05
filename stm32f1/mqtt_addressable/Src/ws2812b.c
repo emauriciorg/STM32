@@ -30,49 +30,49 @@ void set_pwm_entry_color(uint8_t color, uint16_t *color_ptr);
 
 uint16_t led_table[12][24] ={
 	{
-		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W0,W0,W0,W1,
 		W0,W0,W0,W0,W0,W0,W0,W0,
 		W0,W0,W0,W0,W0,W0,W0,W0,
 	},
 	{
 		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W0,W0,W0,W1,
 		W0,W0,W0,W0,W0,W0,W0,W0,
 	},
 	{
 		W0,W0,W0,W0,W0,W0,W0,W0,
 		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W1,W1,W1,W1,W1,
-	},
-	{
-		W0,W0,W0,W0,W1,W1,W1,W1,
 		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W0,W1,W1,W1,W1,
 	},
 	{
-		W0,W0,W0,W0,W1,W1,W0,W1,
-		W0,W1,W0,W0,W1,W0,W0,W0,
-		W0,W0,W0,W1,W0,W1,W0,W0,
-	},
-	{
-		W0,W0,W0,W1,W0,W0,W0,W0,
-		W0,W0,W0,W1,W0,W0,W0,W0,
-		W0,W0,W0,W1,W0,W0,W0,W0,
-	},
-	{
-		W0,W0,W0,W1,W0,W0,W0,W0,
 		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W1,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
 	},
 	{
-		W0,W0,W0,W0,W1,W1,W1,W1,
-		W0,W0,W1,W1,W0,W0,W0,W0,
-		W0,W0,W0,W0,W1,W1,W1,W1,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
 	},
 	{
-		W0,W0,W0,W1,W0,W0,W0,W0,
-		W0,W0,W0,W0,W1,W0,W0,W0,
-		W0,W0,W0,W1,W0,W1,W1,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W1,
+	},
+	{
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+	},
+	{
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+	},
+	{
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
+		W0,W0,W0,W0,W0,W0,W0,W0,
 	},
 	{
 		0,0,0,0,0,0,0,0,
@@ -131,14 +131,16 @@ void set_pwm_entry_color(uint8_t color, uint16_t *color_ptr)
 }
 void parse_led_color_input(char *ascii_color, uint32_t *color_out){
 
+	stop_led_sequence();
 	uint8_t *p_char = 0;
 	uint8_t led_id = 0;
 	p_char = (uint8_t *) strchr((char *)ascii_color,' ');
-	//if (p_char)
-//		return  (p_char+1);
+	if (p_char == 0)
+		return;
 	led_id = (uint8_t)((*ascii_color)-'0');
-	printf("Led is [%x] , color [%s]\r\n",led_id ,(char *)(p_char+1));
+	//printf("Led is [%x] , color [%s]\r\n",led_id ,(char *)(p_char+1));
 	led_set_color_ascii((char *)(p_char+1),led_id,0 );
+	start_led_sequence();
 }
 
 
