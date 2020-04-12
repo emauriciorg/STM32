@@ -23,7 +23,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "cuart.h"
+#include "ws2812b.h"
+//#include "servo.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,7 +66,15 @@ static void MX_TIM4_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define SERVO_ANGLE_0   400
+#define SERVO_PERIOD    20000
+#define SERVO_TIM_PRESCALER 8
+void servo_set_angle(uint16_t angle){
 
+	printf(" Angle to be set is [%d]\r\n",angle );
+	// if (angle >  MAX_ANGLE) return;
+		// htim4.Instance->CCR1 = angle;
+}
 /* USER CODE END 0 */
 
 /**
@@ -74,7 +84,7 @@ static void MX_TIM4_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	setvbuf(stdout,0, _IOLBF, 0);
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -100,6 +110,31 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+  uint32_t seconds = HAL_GetTick();
+  printf("Program stars!!\r\n" );
+  //printf("PWM table size[%d] !!\r\n",sizeof(pwm_value)/2 );
+
+  dbg_setup();
+  start_led_sequence();
+  dbg_register_task(parse_led_color_input, "set", 'p');
+  dbg_register_task(stop_led_sequence, "stop",0);
+  dbg_register_task(start_led_sequence, "start",0);
+  dbg_register_task(servo_set_angle ,"servo",'1');
+
+  uint8_t switch_colors = 0;
+  uint8_t led_id[9]= {0};
+  uint8_t index = 0;
+  for(index = 0;index< 9;index++) {
+	  led_id[index] = index;
+  }
+
+  htim3.Instance->CCR3 = 600;
+  HAL_TIM_Base_Start(&htim4);
+//  	printf("Program start [%s]\r\n", __DATE__);
+
+  //uint32_t loop_counter = 1000;
+//  	HAL_UART_Receive_IT(&huart1, (uint8_t * )rx_temp, 1);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
 
@@ -110,6 +145,11 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    dbg_command_scan();
+    if ( HAL_GetTick() >seconds){
+	    seconds = HAL_GetTick() + 600;
+	    GPIOC->ODR ^=GPIO_PIN_13;
   }
   /* USER CODE END 3 */
 }
@@ -123,7 +163,7 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -135,7 +175,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -229,9 +269,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 8;
+  htim4.Init.Prescaler = SERVO_TIM_PRESCALER;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 20000;
+  htim4.Init.Period = SERVO_PERIOD;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
@@ -254,7 +294,7 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 400;
+  sConfigOC.Pulse = SERVO_ANGLE_0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -301,10 +341,10 @@ static void MX_USART1_UART_Init(void)
 
 }
 
-/** 
+/**
   * Enable DMA controller clock
   */
-static void MX_DMA_Init(void) 
+static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
@@ -356,7 +396,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
