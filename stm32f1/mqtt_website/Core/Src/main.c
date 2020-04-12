@@ -23,8 +23,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include "cuart.h"
 #include "ws2812b.h"
+
 //#include "servo.h"
 /* USER CODE END Includes */
 
@@ -115,8 +117,8 @@ int main(void)
   //printf("PWM table size[%d] !!\r\n",sizeof(pwm_value)/2 );
 
   dbg_setup();
-  start_led_sequence();
-  dbg_register_task(parse_led_color_input, "set", 'p');
+  // start_led_sequence();
+  dbg_register_task((void*)parse_led_color_input, "set", 'p');
   dbg_register_task(stop_led_sequence, "stop",0);
   dbg_register_task(start_led_sequence, "start",0);
   dbg_register_task(servo_set_angle ,"servo",'1');
@@ -128,13 +130,13 @@ int main(void)
 	  led_id[index] = index;
   }
 
-  htim3.Instance->CCR3 = 600;
-  HAL_TIM_Base_Start(&htim4);
+ // htim4.Instance->CCR3 = 600;
+ // HAL_TIM_Base_Start(&htim4);
 //  	printf("Program start [%s]\r\n", __DATE__);
 
   //uint32_t loop_counter = 1000;
 //  	HAL_UART_Receive_IT(&huart1, (uint8_t * )rx_temp, 1);
-  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+ // HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
 
@@ -150,6 +152,7 @@ int main(void)
     if ( HAL_GetTick() >seconds){
 	    seconds = HAL_GetTick() + 600;
 	    GPIOC->ODR ^=GPIO_PIN_13;
+    }
   }
   /* USER CODE END 3 */
 }
@@ -210,9 +213,9 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 0;
+  htim3.Init.Prescaler = TIMER_PRESCALER;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 0;
+  htim3.Init.Period = TIMER_PERIOD;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -235,9 +238,9 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = TIM_OCMODE_PWM1;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
@@ -296,7 +299,7 @@ static void MX_TIM4_Init(void)
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = SERVO_ANGLE_0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
@@ -364,10 +367,22 @@ static void MX_DMA_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(board_led_GPIO_Port, board_led_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : board_led_Pin */
+  GPIO_InitStruct.Pin = board_led_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(board_led_GPIO_Port, &GPIO_InitStruct);
 
 }
 

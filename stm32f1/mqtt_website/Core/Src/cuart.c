@@ -13,7 +13,7 @@ extern UART_HandleTypeDef huart1;
 #define INVALID_DIGIT_CONVERTION 255
 #define MAX_DIGITS                 5
 #define MAX_PAYLOAD_LEN           32
-#define UART_DBG_PORT        &huart1
+#define UART_DBG_PORT        (&huart1)
 #define DEBUG_TIMEOUT           1000
 #define DEBUG_USART_INSTANCE USART1
 
@@ -133,19 +133,11 @@ void dbg_store_packet(char recieved_data)
 		protocol.tail=false;
 }
 
-
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if (huart->Instance == DEBUG_USART_INSTANCE) {
-		dbg_store_packet(Rx_data[0]);
-		__HAL_UART_CLEAR_OREFLAG(UART_DBG_PORT);
-		HAL_UART_Receive_IT(huart, (uint8_t *)Rx_data, 1);
-	}
-}
-
 void dbg_command_scan(void)
 {
+
+
+
 	if (!protocol.complete) { return;}
 	printf("something recieved\r\n");
 	protocol.complete	= false;
@@ -156,6 +148,19 @@ void dbg_command_scan(void)
 	dbg_uart_parser( protocol.parameters) ;
 	dbg_clear_packet();
 
+}
+
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart->Instance == DEBUG_USART_INSTANCE) {
+		dbg_store_packet(Rx_data[0]);
+
+		__HAL_UART_CLEAR_OREFLAG(UART_DBG_PORT);
+
+		HAL_UART_Receive_IT(huart, (uint8_t *)Rx_data, 1);
+	}
 }
 
 
