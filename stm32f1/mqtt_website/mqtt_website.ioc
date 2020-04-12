@@ -1,7 +1,7 @@
 #MicroXplorer Configuration settings - do not modify
 Dma.Request0=TIM3_CH4/UP
 Dma.RequestsNb=1
-Dma.TIM3_CH4/UP.0.Direction=DMA_PERIPH_TO_MEMORY
+Dma.TIM3_CH4/UP.0.Direction=DMA_MEMORY_TO_PERIPH
 Dma.TIM3_CH4/UP.0.Instance=DMA1_Channel3
 Dma.TIM3_CH4/UP.0.MemDataAlignment=DMA_MDATAALIGN_HALFWORD
 Dma.TIM3_CH4/UP.0.MemInc=DMA_MINC_ENABLE
@@ -51,6 +51,7 @@ NVIC.PriorityGroup=NVIC_PRIORITYGROUP_4
 NVIC.SVCall_IRQn=true\:0\:0\:false\:false\:true\:false\:false
 NVIC.SysTick_IRQn=true\:0\:0\:false\:false\:true\:false\:true
 NVIC.TIM3_IRQn=true\:0\:0\:false\:false\:true\:true\:true
+NVIC.USART1_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false
 PA10.Mode=Asynchronous
 PA10.Signal=USART1_RX

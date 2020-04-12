@@ -138,7 +138,7 @@ void parse_led_color_input(char *ascii_color, uint32_t *color_out){
 	if (p_char == 0)
 		return;
 	led_id = (uint8_t)((*ascii_color)-'0');
-	//printf("Led is [%x] , color [%s]\r\n",led_id ,(char *)(p_char+1));
+	printf("Led is [%x] , color [%s]\r\n",led_id ,(char *)(p_char+1));
 	led_set_color_ascii((char *)(p_char+1),led_id,0 );
 	start_led_sequence();
 }
