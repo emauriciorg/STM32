@@ -4,7 +4,7 @@
 
 void dth11_listener(void);
 void dth11_init(void);
-void dth11_read(void)
+void dth11_read(void);
 
 
 #endif /*__DTH11_H__*/
