@@ -23,6 +23,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include "pn532.h"
+#include "cuart.h"
 
 /* USER CODE END Includes */
 
@@ -47,6 +50,16 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if (huart->Instance == DEBUG_USART_INSTANCE) {
+		cuart_isr(huart);
+	}
+	else{
+		pn532_isr(huart);
+	}
+
+}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,6 +83,7 @@ static void MX_USART2_UART_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+  setvbuf(stdout,0, _IOLBF, 0);
 
   /* USER CODE END 1 */
 
@@ -94,7 +108,18 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+	dbg_setup();
+	pn532_init();
+	pn532_wake_up();
+	get_fw_version();
+	dbg_register_task(get_fw_version,"version",0);
+	dbg_register_task(get_fw_version_wk,"versionwk",0);
 
+	dbg_register_task(get_status,"status",0);
+	dbg_register_task(pn532_list_targets,"list",0);
+	dbg_register_task(pn532_sam_config,"sam",0);
+
+	printf("NFC start %s\r\n",__DATE__);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -104,6 +129,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    dbg_command_scan();
+    pn532_listener();
+
   }
   /* USER CODE END 3 */
 }
@@ -118,7 +146,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -131,7 +159,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
@@ -276,8 +304,8 @@ void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(char *file, uint32_t line)
-{ 
+void assert_failed(uint8_t *file, uint32_t line)
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

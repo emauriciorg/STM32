@@ -11,7 +11,7 @@
 **
 **  Environment : System Workbench for MCU
 **
-**  Distribution: The file is distributed “as is,” without any warranty
+**  Distribution: The file is distributed ï¿½as is,ï¿½ without any warranty
 **                of any kind.
 **
 *****************************************************************************
@@ -52,6 +52,11 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/times.h>
+
+
+#include "stm32f0xx_hal.h"
+#define UART_DBG_PTR &huart1
+extern UART_HandleTypeDef huart1;
 
 
 /* Variables */
@@ -102,12 +107,9 @@ return len;
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
-	int DataIdx;
+	UNUSED(file);
+	HAL_UART_Transmit( UART_DBG_PTR, (uint8_t *) ptr, len, HAL_MAX_DELAY);
 
-	for (DataIdx = 0; DataIdx < len; DataIdx++)
-	{
-		__io_putchar(*ptr++);
-	}
 	return len;
 }
 

@@ -183,7 +183,7 @@ static uint16_t dbg_has_arguments(uint8_t *msg)
 	p_char = (uint8_t *) strchr((char *)msg,' ');
 	if (p_char)
 		return  ascii_to_to_hex(p_char+1, 'd');
-	return 0;
+	return INVALID_DIGIT_CONVERTION;
 }
 
 
@@ -222,7 +222,7 @@ static uint16_t ascii_to_to_hex(uint8_t *stream_pointer, uint8_t convertion_type
 
  		converted_digit = ( hexascii_to_hex(*stream_pointer));
  		if (INVALID_DIGIT_CONVERTION == converted_digit) {
-			break;
+			return INVALID_DIGIT_CONVERTION;
 		}
 		hex_result = (hex_result * convertion_offset) + converted_digit;
 		stream_pointer++;
@@ -275,7 +275,7 @@ void dbg_uart_parser(uint8_t *msg)
 			return;
 		}
 
-		if (args && task_pool.entry[task_id].args){
+		if ((args!=INVALID_DIGIT_CONVERTION) && task_pool.entry[task_id].args){
 			task_pool.entry[task_id].handlers.uint_args(args);
 			return;
 		}

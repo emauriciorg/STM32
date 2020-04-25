@@ -70,15 +70,25 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN 0 */
 #define SERVO_ANGLE_0   1000
 #define SERVO_PERIOD    (20000 -1)
-#define SERVO_TIM_PRESCALER 8
+#define SERVO_TIM_PRESCALER 64
 void servo_set_angle(uint16_t angle){
 
+	uint16_t pulse_width = 0;
+
 	printf(" Angle to be set is [%d]\r\n",angle );
-	 if ( (angle >  2000) || (angle < 300)) {
+	 if ( (angle >  180) || (angle < 0)) {
 		 printf("wrong angle value\r\n" );
 		 return;
-	 }
-	 htim4.Instance->CCR1 = angle;
+	}
+	if( angle > 90){
+		pulse_width = (angle * 8.8) + 413;
+
+	}else{
+		pulse_width = (angle * 7) + 413;
+	}
+
+
+	htim4.Instance->CCR2 = pulse_width;
 }
 /* USER CODE END 0 */
 
@@ -126,6 +136,8 @@ int main(void)
   dbg_register_task(start_led_sequence, "start",0);
   dbg_register_task(servo_set_angle ,"servo",'1');
 
+
+  servo_set_angle(0);
   uint8_t switch_colors = 0;
   uint8_t led_id[9]= {0};
   uint8_t index = 0;
@@ -135,7 +147,7 @@ int main(void)
 
 // htim4.Instance->CCR1 = 1000;
  HAL_TIM_Base_Start(&htim4);
- HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+ HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);
 
   /* USER CODE END 2 */
 
@@ -305,6 +317,12 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
+
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+	{
+  	Error_Handler();
+	}
   /* USER CODE BEGIN TIM4_Init 2 */
 
   /* USER CODE END TIM4_Init 2 */
