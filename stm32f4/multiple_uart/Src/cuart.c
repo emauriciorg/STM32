@@ -2,17 +2,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
-//#include "foundation.h"
-#include "stm32f4xx_hal.h"
-#include "lan_rs232_stub.h"
-
-#if 1
-//def LED_KIR003_LUMIN
+#include "cuart.h"
 
 /*----------------------------------------------------------------------------*/
-#define UART_HANDLER 	  huart1_mask
+#define UART_HANDLER 	  huart1
 #define DEBUG_USART_INSTANCE USART1
-#define LAN_STUB_IRQ_HANLDER USART1_IRQHandler
+
 #define UART_DBG
 #define UART_RX_BUFFER_SIZE      256
 #define INVALID_DIGIT_CONVERTION 255
@@ -27,10 +22,10 @@
 	#define UART_DEBUG(...) printf(__VA_ARGS__)
 #endif
 
-#define SAME_STRING(buffer, string, len )  !memcmp(buffer, string, len)
+#define STR_CMP(buffer, string, len )  !memcmp(buffer, string, len)
 
 /*----------------------------------------------------------------------------*/
-UART_HandleTypeDef UART_HANDLER;
+extern UART_HandleTypeDef UART_HANDLER;
 /*----------------------------------------------------------------------------*/
 static uint16_t ascii_to_to_hex(uint8_t *stream_pointer, uint8_t convertion_type);
 static uint8_t hexascii_to_hex( char  hex_character);
@@ -96,32 +91,6 @@ static struct {
 /*----------------------------------------------------------------------------*/
 
 void dbg_uart_error_call_back(UART_HandleTypeDef *huart){}
-void dbg_uart_rx_callback(UART_HandleTypeDef *huart);
-
-void LAN_STUB_IRQ_HANLDER(void)
-{
-	dbg_uart_rx_callback(PTR_UART_DBG);
-}
-
-
-
-void lan_rs232_stub_version(void)
-{
-	HAL_UART_Transmit(PTR_UART_DBG ,(uint8_t *)"version v1.1", strlen("version v1.1"),HAL_MAX_DELAY);
-}
-
-
-void echo_task(void)
-{
-	HAL_UART_Transmit(PTR_UART_DBG ,(uint8_t *)"THIS IS AN ECHO", strlen("THIS IS AN ECHO"),HAL_MAX_DELAY);
-}
-
-
-void lan_rs232_looping(void)
-{
-	HAL_UART_Transmit(PTR_UART_DBG ,(uint8_t *)"looping", strlen("looping"),HAL_MAX_DELAY);
-}
-
 
 
 uint8_t dbg_register_task(void (*task_routine)(void), uint8_t *task_command, uint8_t args)
@@ -143,7 +112,7 @@ uint8_t dbg_register_task(void (*task_routine)(void), uint8_t *task_command, uin
 
 	task_pool.taken_task++;
 
-	printf("Task %lx with cmd [#%s*]  registered OK\r\n", (uint32_t)&task_routine, task_command);
+	printf("Task %lx with cmd [%s]  registered OK\r\n", (uint32_t)&task_routine, task_command);
 	return true;
 }
 
@@ -177,13 +146,12 @@ void dbg_store_packet(char recieved_data)
 void dbg_uart_rx_callback(UART_HandleTypeDef *huart)
 {
 	__HAL_UART_CLEAR_OREFLAG(PTR_UART_DBG);
-	protocol.rx_byte[0] = (char)(UART_HANDLER.Instance->DR & 0x00FF);
 	dbg_store_packet((protocol.rx_byte[0]));
-
 	HAL_UART_Receive_IT(huart, (uint8_t *)protocol.rx_byte, 1);
+
 }
 
-void lan_rs232_stub_scan(void)
+void dbg_command_scan(void)
 {
 	if (!protocol.available_msg) { return;}
 
@@ -258,33 +226,18 @@ static uint16_t ascii_to_to_hex(uint8_t *stream_pointer, uint8_t convertion_type
 
 
 
-void lan_rs232_stub_init(void)
+void dbg_init(void)
 {
-
-	UART_HANDLER.Instance          = DEBUG_USART_INSTANCE;
-	UART_HANDLER.Init.BaudRate     = 115200;
-	UART_HANDLER.Init.WordLength   = UART_WORDLENGTH_8B;
-	UART_HANDLER.Init.StopBits     = UART_STOPBITS_1;
-	UART_HANDLER.Init.Parity       = UART_PARITY_NONE;
-	UART_HANDLER.Init.Mode         = UART_MODE_TX_RX;
-	UART_HANDLER.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
-	UART_HANDLER.Init.OverSampling = UART_OVERSAMPLING_16;
-
-	HAL_UART_Init(PTR_UART_DBG);
-
-
 	__HAL_UART_CLEAR_OREFLAG(PTR_UART_DBG);
 	__HAL_UART_CLEAR_NEFLAG(PTR_UART_DBG);
 	__HAL_UART_CLEAR_FEFLAG(PTR_UART_DBG);
 	__HAL_UART_DISABLE_IT(PTR_UART_DBG, UART_IT_ERR);
 
-	// UART_HANDLER.RxCpltCallback = dbg_uart_rx_callback;
-	// UART_HANDLER.ErrorCallback  = dbg_uart_error_call_back;
+	UART_HANDLER.RxCpltCallback = dbg_uart_rx_callback;
+	UART_HANDLER.ErrorCallback  = dbg_uart_error_call_back;
 
 	HAL_UART_Receive_IT(PTR_UART_DBG,(uint8_t *)protocol.rx_byte,1);
 	task_pool.limit = MAX_TASK;
-
-	dbg_register_task(echo_task,"echo",0);
 }
 
 
@@ -307,14 +260,10 @@ void dbg_uart_parser(uint8_t *msg)
 		cmd_str = task_pool.entry[task_id].command;
 		cmd_len = task_pool.entry[task_id].command_len;
 
-		if ( !SAME_STRING(msg ,cmd_str,cmd_len)){
-			HAL_UART_Transmit(PTR_UART_DBG ,(uint8_t *)"unknow command", strlen("unknow command"),HAL_MAX_DELAY);
+		if ( !STR_CMP(msg ,cmd_str,cmd_len))
 			continue;
-		}
-		HAL_UART_Transmit(PTR_UART_DBG ,(uint8_t *)"running task", strlen("running task"),HAL_MAX_DELAY);
 		task_pool.entry[task_id].handlers.uint_args(args);
 
 
 	}
 }
-#endif

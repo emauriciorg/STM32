@@ -11,5 +11,8 @@ void cuart_parser(void);
 
 
 uint8_t dbg_register_task(void (*task_routine)(void), uint8_t *task_command, uint8_t args);
+void lan_rs232_stub_version(void);
+void echo_task(void);
+
 
 #endif /*__LAN_RS232_STUB_H__*/
