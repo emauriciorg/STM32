@@ -139,7 +139,7 @@ void dbg_command_scan(void)
 
 
 	if (!protocol.complete) { return;}
-	printf("something recieved\r\n");
+	//printf("something recieved\r\n");
 	protocol.complete	= false;
 	protocol.data_in[protocol.tail+1] = '\0';
 	protocol.command	= protocol.data_in[1];
@@ -270,7 +270,7 @@ void dbg_uart_parser(uint8_t *msg)
 			continue;
 
 		if ((task_pool.entry[task_id].args=='p')){
-			printf("executing task arg\r\n");
+			// printf("executing task arg\r\n");
 			task_pool.entry[task_id].handlers.ptr_arg(get_arg_ptr(msg));
 			return;
 		}
@@ -281,13 +281,13 @@ void dbg_uart_parser(uint8_t *msg)
 		}
 
 
-		if (! (args | task_pool.entry[task_id].args)) {
-			printf("executing task NO arg\r\n");
+		if (! (task_pool.entry[task_id].args)) {
+			// printf("executing task NO arg\r\n");
 
 			task_pool.entry[task_id].handlers.void_args();
 			return;
 		}
 		break;
 	}
-	printf("task executed\r\n");
+	//printf("task executed\r\n");
 }

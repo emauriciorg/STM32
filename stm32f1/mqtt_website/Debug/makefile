@@ -40,8 +40,8 @@ mqtt_website.bin \
 all: mqtt_website.elf secondary-outputs
 
 # Tool invocations
-mqtt_website.elf: $(OBJS) $(USER_OBJS) D:\git\stm32_git\stm32f1\mqtt_website\STM32F103C8TX_FLASH.ld
-	arm-none-eabi-gcc -o "mqtt_website.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\git\stm32_git\stm32f1\mqtt_website\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="mqtt_website.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+mqtt_website.elf: $(OBJS) $(USER_OBJS) D:\git\microcontroller\stm32_git\stm32f1\mqtt_website\STM32F103C8TX_FLASH.ld
+	arm-none-eabi-gcc -o "mqtt_website.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\git\microcontroller\stm32_git\stm32f1\mqtt_website\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="mqtt_website.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
