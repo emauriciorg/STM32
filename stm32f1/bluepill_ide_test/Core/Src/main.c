@@ -52,6 +52,7 @@ UART_HandleTypeDef huart1;
 #define BLINK_TIMER 100
 #define PWD_PERIOD  10
 #define TIMER_PERIOD 20000
+#define MAX_PWM           1500
 
 uint32_t counter = BLINK_TIMER;
 uint16_t pwm = 0;
@@ -60,12 +61,10 @@ volatile uint8_t  rx_flag = 0;
 volatile uint8_t  recieved_cmd = 0;
 
 
-#define CMD_READ_ADC 'A'
-#define CMD_ECHO     'E'
+#define CMD_READ_ADC      'A'
+#define CMD_ECHO          'E'
 #define CMD_PWM_PLUS      '+'
 #define CMD_PWM_MINUS     '-'
-#define PERIOD_SERVO   1500
-//#define CMD_READ_ADC 'C'
 
 
 void sample_chanel(void);
@@ -73,7 +72,9 @@ void sample_chanel(void);
 void cmd_parse_command(void)
 {
 	if (!rx_flag)  return;
+
 	rx_flag = 0;
+
 	switch(recieved_cmd){
 	case CMD_READ_ADC :
 				sample_chanel();
@@ -83,7 +84,7 @@ void cmd_parse_command(void)
 				break;
 	case CMD_PWM_PLUS :
 
-				if ((pwm +10) <= PERIOD_SERVO)
+				if ((pwm +10) <= MAX_PWM)
 					pwm+=10;
 				printf("PWM is [%d] \r\n", pwm);
 				htim3.Instance->CCR3 = pwm;
@@ -95,12 +96,6 @@ void cmd_parse_command(void)
 
 				htim3.Instance->CCR3 = pwm;
 				break;
-
-	case CHANGE_SEQUE_1 :
-			// uint8_t seque_1 [100] = {1000, 0,500, 555,500};
-			// uint8_t seque_2 [100] = {1000, 0,500, 555,500};
-			HAL_TIM_PWM_Start_DMA(&htim3 ,TIM_CHANNEL_4, seque_2, sizeof(seque_1));
-
 
 	default: break;
 	}
@@ -143,13 +138,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void sample_chanel(void)
 {
-	// sConfig.Channel = ADC_CHANNEL_0;
-	// sConfig.Rank = ADC_REGULAR_RANK_1;
-	// sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-	// if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
 
 	HAL_ADC_Start(&hadc1);
-	//HAL_IS_BIT_CLR(hadc->Instance->SR, ADC_FLAG_EOC)
 	HAL_ADC_PollForConversion(&hadc1, 200);
 	uint32_t adc_value= HAL_ADC_GetValue(&hadc1);
 	HAL_ADC_Stop(&hadc1);
@@ -208,8 +198,6 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start_IT(&htim3);
-	printf("Program start [%s]\r\n", __DATE__);
-
 	//uint32_t loop_counter = 1000;
 	HAL_UART_Receive_IT(&huart1, (uint8_t * )rx_temp, 1);
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
