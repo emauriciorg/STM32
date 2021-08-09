@@ -26,7 +26,7 @@ static uint32_t ascii_to_to_hex(uint8_t *stream_pointer, uint8_t convertion_type
 
 void set_pwm_entry_color(uint8_t color, uint16_t *color_ptr);
 
-#define TOTAL_LEDS 9
+#define TOTAL_LEDS 8
 
 uint16_t led_table[12][24] ={
 	{
@@ -58,11 +58,6 @@ uint16_t led_table[12][24] ={
 		W0,W0,W0,W0,W0,W0,W0,W0,
 		W0,W0,W0,W0,W0,W0,W0,W0,
 		W0,W0,W0,W0,W0,W0,W0,W1,
-	},
-	{
-		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W0,W0,W0,W0,W0,
-		W0,W0,W0,W0,W0,W0,W0,W0,
 	},
 	{
 		W0,W0,W0,W0,W0,W0,W0,W0,

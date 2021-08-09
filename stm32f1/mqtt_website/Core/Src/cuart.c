@@ -79,26 +79,24 @@ static struct {
 	uint8_t end;
 } protocol={'#','*', 0,0,0,0,0, {0},{0},{0},0};
 
+#define MAX_COMMAND_LEN  10
 
 
 uint8_t dbg_register_task(void (*task_routine)(void), char *task_command, uint8_t args)
 {
 	uint8_t	 task_command_len  = strlen((char *)task_command);
- 	if (task_routine == NULL ) return FALSE;
+
+	 if (task_routine == NULL ) return FALSE;
 
 	if (task_command == NULL) return FALSE;
 
-	if (task_command_len > 10) return FALSE;
+	if (task_command_len > MAX_COMMAND_LEN) return FALSE;
 
 	if ((task_pool.taken_task+1) >= task_pool.limit ) return FALSE;
 
-	task_pool.entry[task_pool.taken_task].args = args;
-
-
+	task_pool.entry[task_pool.taken_task].args            = args;
 	task_pool.entry[task_pool.taken_task].handlers.basic  = task_routine;
-
-
-	task_pool.entry[task_pool.taken_task].command_len = task_command_len;
+	task_pool.entry[task_pool.taken_task].command_len     = task_command_len;
 	memcpy (task_pool.entry[task_pool.taken_task].command  , task_command,task_command_len);
 
 	task_pool.taken_task++;
