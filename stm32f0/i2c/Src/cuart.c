@@ -29,8 +29,6 @@ extern UART_HandleTypeDef huart1;
 #endif
 
 
-
-
 static uint16_t cli_ascii_stream_to_hex(uint8_t *stream_pointer, uint8_t convertion_type);
 static uint8_t cli_ascii_charhex_to_hex( char  hex_character);
 static void dbg_uart_parser(uint8_t *msg);

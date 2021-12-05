@@ -1,5 +1,6 @@
 #include "ssd1306.h"
 
+#include <stdint.h>
 typedef struct{
 	uint8_t fontsize;
 	uint8_t font_id;
@@ -7,10 +8,10 @@ typedef struct{
 
 }font_type;
 
-put_char (uint8_t *raw_char,uint16_t char_width, uint16_t char_heigth)
+void put_char (uint8_t *raw_char,uint16_t char_width, uint16_t char_heigth)
 {
 
-	for (page= 0 ;page < char_heigth/8; page++){
+	for (uint8_t page= 0 ;page < char_heigth/8; page++){
 		set_page(page);
 		set_colum(colum);
 		set_pixel(raw_char+(page*char_width), char_width);

@@ -53,7 +53,7 @@ struct task_entry_st{
 struct task_pool_st{
 	struct task_entry_st entry[MAX_TASK];
 	uint8_t taken_task;
-	/*const*/ uint8_t  limit;
+	uint8_t  limit;
 }task_pool;
 
 enum{
@@ -94,8 +94,6 @@ uint8_t dbg_register_task(void (*task_routine)(void), uint8_t *task_command, uin
 	if ((task_pool.taken_task+1) >= task_pool.limit ) return FALSE;
 
 	task_pool.entry[task_pool.taken_task].args = args;
-
-
 	task_pool.entry[task_pool.taken_task].handlers.basic  = task_routine;
 
 

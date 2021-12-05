@@ -144,10 +144,11 @@ int main(void)
 	dbg_setup();
 	printf("KIR03 Assistant starts %s %s \r\n",__DATE__,__TIME__);
 
-	dbg_register_task(&get_version, (uint8_t *)"version",0);
-	dbg_register_task(&echo_reply, (uint8_t *)"echo",0);
-	dbg_register_task(&generate_ticket,(uint8_t *)"tickets",1);
+	dbg_register_task(&get_version    , (uint8_t *)"version",0);
 
+	dbg_register_task(&echo_reply     , (uint8_t *)"echo",0);
+	dbg_register_task(&generate_ticket, (uint8_t *)"tickets",1);
+  
 
 	#define SO 0xC4
 	#define SI 0xC5
