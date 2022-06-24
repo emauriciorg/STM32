@@ -21,7 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lcd_api.h"
+#include "rct_api.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +63,19 @@ static void MX_I2C1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+uint8_t rtc_readRegister(uint8_t addr){
+	const uint8_t single_byte_read  = 1;
+	uint8_t out_data = 0;
+  HAL_I2C_Mem_Read(&hi2c1, 0xD0|0X01, addr, single_byte_read, &out_data, single_byte_read, 100);
+	return out_data;
+}
+
+uint8_t rtc_clock_start(uint8_t addr){
+	const uint8_t single_byte_read  = 1;
+	uint8_t out_data = 0;
+  HAL_I2C_Mem_Write(&hi2c1, 0xD0, addr, single_byte_read, &out_data, single_byte_read, 100);
+	return out_data;
+}
 /* USER CODE END 0 */
 
 /**
@@ -106,13 +120,20 @@ int main(void)
     BSP_LCD_SetFont(&LCD_DEFAULT_FONT);
     //BSP_LCD_DrawDigits(100,10,5);
  #endif
-    uint8_t hour[6];
+    uint8_t hour[6]={0};
     uint32_t timeout[5] = {0};
-    uint8_t hours=0,minutes=0,seconds=0,millis =0;
-    BSP_LCD_DisplayDigits(30,40,"12:34");
+    uint8_t hours=1,minutes=2,seconds=3,millis =4;
     hour[2]=':';
     #endif
- //   BSP_LCD_SetBackColor(LCD_DEFAULT_BACKCOLOR);
+    uint8_t rtc_data;
+    uint32_t rtc_timeout = 0;
+    date_time_t date_time;
+    date_time.milliseconds = 0;
+    date_time.seconds = 0;
+    date_time.minutes = 0;
+    date_time.hours = 0;
+    rtc_set_time(date_time);
+    memcpy(hour,"00:00",strlen("00:00"));
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -121,31 +142,23 @@ int main(void)
   {
       //GPIOC->ODR ^=LD4_Pin;
       //HAL_Delay(400);
-
-      if(HAL_GetTick() > timeout[0]){
-          timeout[0]= HAL_GetTick()+100;
-          hour[4] = (millis%10)+'0';
-           BSP_LCD_DisplayDigits(30,40,hour);
-        millis++;
-      } 
-
-       if(HAL_GetTick() > timeout[1]){
-          timeout[1]= HAL_GetTick()+300;
-          hour[3] = (seconds%10)+'0'; 
-          seconds++;
+      if (HAL_GetTick() > rtc_timeout){
+          rtc_timeout = HAL_GetTick()+ 200;
+           rtc_data = bcdToDec(rtc_readRegister(0)&0x7f);
+           millis   =  (rtc_data%10);
+           seconds  = (rtc_data)/10;
+           rtc_data = bcdToDec(rtc_readRegister(0x01));
+           minutes  = (rtc_data%10);
+           hours    = (rtc_data/10);     
       }
 
-       if(HAL_GetTick() > timeout[2]){
-          timeout[2]= HAL_GetTick()+500;
+      if (HAL_GetTick() > timeout[0]){
+          hour[4] = (millis%10)+'0';
+          hour[3] = (seconds%10)+'0'; 
           hour[1] = (minutes%10)+'0'; 
-          minutes++;
-       }
-
-        if(HAL_GetTick() > timeout[3]){
-          hour[0] = (hours%10)+'0';
-          timeout[3]= HAL_GetTick()+1000;
-          hours++;
-        }
+          hour[0] = (hours%10)+'0'; 
+          BSP_LCD_DisplayDigits(70,80,hour);
+      }
 
 
     /* USER CODE END WHILE */

@@ -23,6 +23,7 @@ C_DEPS :=
 SUBDIRS := \
 Core/Fonts \
 Core/Src \
+Core/Src/rtc \
 Core/Startup \
 Core/lcd \
 Drivers/STM32F0xx_HAL_Driver/Src \

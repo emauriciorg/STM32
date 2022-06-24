@@ -10,6 +10,8 @@
 "./Core/Src/syscalls.o"
 "./Core/Src/sysmem.o"
 "./Core/Src/system_stm32f0xx.o"
+"./Core/Src/rtc/rtc_1307.o"
+"./Core/Src/rtc/rtc_api.o"
 "./Core/Startup/startup_stm32f030r8tx.o"
 "./Core/lcd/ili9488.o"
 "./Core/lcd/lcd_api.o"

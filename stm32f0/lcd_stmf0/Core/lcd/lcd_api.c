@@ -1111,7 +1111,8 @@ void BSP_LCD_DrawDigits(uint16_t xpos,uint16_t ypos, uint8_t digit) {
     
 
   BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
-
+    if (digit>9)return;
+    if(digit<0) return;
     x[0] = xpos;
     x[1] = x[0] - (LCD_SEGMENT_WIDTH + LCD_SEGMENT_GAP);
     x[2] = x[1];

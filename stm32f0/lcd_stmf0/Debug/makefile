@@ -12,6 +12,7 @@ RM := rm -rf
 -include Drivers/STM32F0xx_HAL_Driver/Src/subdir.mk
 -include Core/lcd/subdir.mk
 -include Core/Startup/subdir.mk
+-include Core/Src/rtc/subdir.mk
 -include Core/Src/subdir.mk
 -include Core/Fonts/subdir.mk
 -include objects.mk
@@ -62,8 +63,8 @@ all: main-build
 main-build: lcd_stm32f0.elf secondary-outputs
 
 # Tool invocations
-lcd_stm32f0.elf lcd_stm32f0.map: $(OBJS) $(USER_OBJS) F:\G\graveyard\lcd_stmf0\STM32F030R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "lcd_stm32f0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"F:\G\graveyard\lcd_stmf0\STM32F030R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="lcd_stm32f0.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+lcd_stm32f0.elf lcd_stm32f0.map: $(OBJS) $(USER_OBJS) F:\G\STM32\stm32f0\lcd_stmf0\STM32F030R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "lcd_stm32f0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"F:\G\STM32\stm32f0\lcd_stmf0\STM32F030R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="lcd_stm32f0.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
