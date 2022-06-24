@@ -4313,7 +4313,6 @@ __weak void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* NOTE : This function Should not be modified, when the callback is needed,
             the __HAL_TIM_PeriodElapsedCallback could be implemented in the user file
    */
-
 }
 /**
   * @brief  Output Compare callback in non blocking mode 

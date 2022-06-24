@@ -81,7 +81,6 @@ static struct {
 } protocol={'#','*', 0,0,0,0,0, {0},{0},{0},0};
 
 
-
 uint8_t dbg_register_task(void (*task_routine)(void), uint8_t *task_command, uint8_t args)
 {
 	uint8_t	 task_command_len  = strlen((char *)task_command);

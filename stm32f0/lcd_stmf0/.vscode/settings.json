@@ -1,0 +1,7 @@
+{
+	"files.associations": {
+		"lcd_api.h": "c",
+		"stm32f0xx_hal.h": "c",
+		"fonts.h": "c"
+	}
+}
