@@ -2,6 +2,10 @@
 	"files.associations": {
 		"lcd_api.h": "c",
 		"stm32f0xx_hal.h": "c",
-		"fonts.h": "c"
+		"fonts.h": "c",
+		"ds18b20.h": "c",
+		"ds18b20config.h": "c",
+		"stm32f0xx.h": "c",
+		"onewire.h": "c"
 	}
 }

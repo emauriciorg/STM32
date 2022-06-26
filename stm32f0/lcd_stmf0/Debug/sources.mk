@@ -22,6 +22,7 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 Core/Fonts \
+Core/Src/ds18b20 \
 Core/Src \
 Core/Src/rtc \
 Core/Startup \

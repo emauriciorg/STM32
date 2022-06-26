@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "lcd_api.h"
 #include "rct_api.h"
+#include "ds18b20.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +47,8 @@ SPI_HandleTypeDef hspi2;
 DMA_HandleTypeDef hdma_spi2_rx;
 DMA_HandleTypeDef hdma_spi2_tx;
 
+TIM_HandleTypeDef htim3;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -56,6 +59,7 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -109,8 +113,9 @@ int main(void)
   MX_DMA_Init();
   MX_SPI2_Init();
   MX_I2C1_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-   #if 1
+   #if 0
     BSP_LCD_Init();
 
 #if 0
@@ -120,13 +125,18 @@ int main(void)
     BSP_LCD_SetFont(&LCD_DEFAULT_FONT);
     //BSP_LCD_DrawDigits(100,10,5);
  #endif
-    uint8_t hour[6]={0};
+   
+    #endif
+ uint8_t hour[6]={0};
     uint32_t timeout[5] = {0};
     uint8_t hours=1,minutes=2,seconds=3,millis =4;
     hour[2]=':';
-    #endif
+    uint32_t dsb_timeout = 0;
+    float dsb_value;
+
     uint8_t rtc_data;
     uint32_t rtc_timeout = 0;
+    
     date_time_t date_time;
     date_time.milliseconds = 0;
     date_time.seconds = 0;
@@ -134,14 +144,27 @@ int main(void)
     date_time.hours = 0;
     rtc_set_time(date_time);
     memcpy(hour,"00:00",strlen("00:00"));
+
+    Ds18b20_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-      //GPIOC->ODR ^=LD4_Pin;
-      //HAL_Delay(400);
+#if 1
+      if (HAL_GetTick() > dsb_timeout){
+        dsb_timeout = HAL_GetTick()+ 1000;
+        Ds18b20_ManualConvert();
+      }
+#endif
+      
+	   //   _DS18B20_TIMER.Instance->CNT = 0;
+	   //   while(_DS18B20_TIMER.Instance->CNT <= 470);
+       // GPIOA->ODR^=GPIO_PIN_6;
+      
+      
+#if 0
       if (HAL_GetTick() > rtc_timeout){
           rtc_timeout = HAL_GetTick()+ 200;
            rtc_data = bcdToDec(rtc_readRegister(0)&0x7f);
@@ -149,7 +172,9 @@ int main(void)
            seconds  = (rtc_data)/10;
            rtc_data = bcdToDec(rtc_readRegister(0x01));
            minutes  = (rtc_data%10);
-           hours    = (rtc_data/10);     
+           hours    = (rtc_data/10);
+           GPIOC->ODR ^=LD4_Pin;
+        
       }
 
       if (HAL_GetTick() > timeout[0]){
@@ -157,9 +182,9 @@ int main(void)
           hour[3] = (seconds%10)+'0'; 
           hour[1] = (minutes%10)+'0'; 
           hour[0] = (hours%10)+'0'; 
-          BSP_LCD_DisplayDigits(70,80,hour);
+         // BSP_LCD_DisplayDigits(70,80,hour);
       }
-
+#endif
 
     /* USER CODE END WHILE */
 
@@ -302,6 +327,51 @@ static void MX_SPI2_Init(void)
 }
 
 /**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 47;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 0xFFFF;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -332,6 +402,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(DS18B20_GPIO_Port, DS18B20_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LCD_DC_Pin|LCD_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -342,6 +415,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : DS18B20_Pin */
+  // GPIO_InitStruct.Pin = DS18B20_Pin;
+  // GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  // GPIO_InitStruct.Pull = GPIO_NOPULL;
+  // GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  // HAL_GPIO_Init(DS18B20_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LCD_RESET_Pin */
   GPIO_InitStruct.Pin = LCD_RESET_Pin;
